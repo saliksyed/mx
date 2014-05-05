@@ -49,6 +49,8 @@ mx.symbol = function() {
 mx.constant = function(value) {
 	var that = mx.symbol();
 
+	if (!value || isNaN(value)) throw "Need to specify value for constant";
+
 	that.__class = "mx.constant";
 
 	/**
@@ -76,7 +78,9 @@ mx.scalar = function(name) {
 	var that = mx.symbol();
 
 	if (!name) throw "Need to specify a name for symbol";
-	
+
+	name = ''+name;
+
 	that.__class = "mx.scalar";
 
 	/**
