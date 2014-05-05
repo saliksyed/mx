@@ -1,4 +1,5 @@
-var mx = mx || {};
+
+var mx = exports || {};
 
 // GOAL 1: get it working on simple non matrix expressions
 // GOAL 2: get it working on matrix expressions
@@ -49,7 +50,7 @@ mx.symbol = function() {
 mx.constant = function(value) {
 	var that = mx.symbol();
 
-	if (!value || isNaN(value)) throw "Need to specify value for constant";
+	if (isNaN(value)) throw "Need to specify value for constant";
 
 	that.__class = "mx.constant";
 

@@ -10,15 +10,25 @@ describe('mx.symbol', function() {
 	});
 
 	it('should not be differentiable', function() {
-		expect(mx.symbol().differentiate(null)).toThrow();
+		var diff = function() {
+			return mx.symbol().differentiate(null);
+		};
+		expect(diff).toThrow();
 	});
 });
 
 describe('mx.constant', function() {
 
 	it('should throw an exception if instantiated with a bad value', function() {
-		expect(mx.constant()).toThrow();
-		expect(mx.constant('hello')).toThrow();
+		var test1 = function() {
+			mx.constant();
+		};
+
+		var test2 = function() {
+			mx.constant('hello');
+		};
+		expect(test1).toThrow();
+		expect(test2).toThrow();
 	});
 
 	it('should return mx.constant as classname', function() {
@@ -38,7 +48,11 @@ describe('mx.constant', function() {
 describe('mx.scalar', function() {
 
 	it('should throw an exception if instantiated with a bad value', function() {
-		expect(mx.scalar()).toThrow();
+		var test1 = function() {
+			return mx.scalar();
+		};
+
+		expect(test1).toThrow();
 	});
 
 	it('should return mx.scalar as classname', function() {
@@ -65,7 +79,11 @@ describe('mx.scalar', function() {
 describe('mx.multiply', function() {
 
 	it('should throw an exception if instantiated without values', function() {
-		expect(mx.multiply()).toThrow();
+		var test1 = function() {
+			return mx.multiply();
+		};
+		
+		expect(test1).toThrow();
 	});
 
 	it('should optimize away 0 multiplications', function() {
