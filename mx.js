@@ -150,6 +150,9 @@ mx.add = function(symbol1, symbol2) {
 		return symbol1;
 	}
 
+	if(!symbol1 || !symbol2) {
+		throw "Need 2 value values to add";
+	}
 	var that = mx.symbol();
 
 	that.__class = "mx.add";
@@ -159,7 +162,7 @@ mx.add = function(symbol1, symbol2) {
 	};
 	
 	that.differentiate = function(by) {
-		return mx.add(mx.multiply(symbol1.differentiate(by), symbol2), mx.multiply(symbol2.differentiate(by), symbol1));
+		return mx.add(symbol1.differentiate(by), symbol2.differentiate(by));
 	};
 
 	return that;
@@ -168,12 +171,29 @@ mx.add = function(symbol1, symbol2) {
 
 mx.divide = function(g, h) {
 	
+	if (h.value() === 0) {
+		throw "Cannot divide by 0";
+	}
+
+	if (h.value() === 1) {
+		return g;
+	}
+
 	that.__class = "mx.divide";
 	
+	/**
+	 * Returns the value of the division
+	 * @return {Number} The value of the division
+	 */
 	that.value = function() {
 		return symbol1.value() / symbol2.value();
 	};
 
+	/**
+	 * Differentiates g,h using the quotient rule
+	 * @param  {mx.symbol} by the symbol to take the derivative with respect to
+	 * @return {mx.symbol}    differentiated expression
+	 */
 	that.differentiate = function(by) {
 		return mx.divide(mx.subtract(mx.multiply(g.differentiate(by), h), mx.multiply(h.differentiate(by), g)),mx.multiply(h,h));
 	};

@@ -82,7 +82,7 @@ describe('mx.multiply', function() {
 		var test1 = function() {
 			return mx.multiply();
 		};
-		
+
 		expect(test1).toThrow();
 	});
 
@@ -119,6 +119,52 @@ describe('mx.multiply', function() {
 	});
 });
 
+
+
+describe('mx.add', function() {
+
+	it('should throw an exception if instantiated without values', function() {
+		var test1 = function() {
+			return mx.add();
+		};
+		
+		expect(test1).toThrow();
+	});
+
+	it('should optimize away 0 additions', function() {
+		expect(mx.add(mx.constant(0), mx.scalar('y')).className()).toBe('mx.scalar');
+		expect(mx.add(mx.constant(0), mx.scalar('y')).name()).toBe('y');
+	});
+
+
+	it('should return mx.add as classname when adding scalars', function() {
+		expect(mx.add(mx.scalar('x'), mx.scalar('y')).className()).toBe('mx.add');
+	});
+
+	it('should differentiate correctly', function() {
+		var x = mx.scalar('x');
+		var y = mx.scalar('y');
+
+		var xplusy = mx.add(x,y);
+
+		var d_dx_xplusy = xplusy.differentiate(x);
+
+		var d_dy_xplusy = xplusy.differentiate(y);
+		console.log(d_dx_xplusy.name());
+		expect(d_dx_xplusy.value()).toBe(1);
+		expect(d_dy_xplusy.value()).toBe(1);
+	});
+
+	it('should differentiate correctly', function() {
+		var x = mx.scalar('x');
+
+		var xplusx = mx.add(x,x);
+
+		var d_dx_xplusx= xplusx.differentiate(x);
+
+		expect(d_dx_xplusx.value()).toBe(2);
+	});
+});
 
 
 
