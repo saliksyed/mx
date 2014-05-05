@@ -113,6 +113,18 @@ mx.multiply = function(symbol1, symbol2) {
 		return mx.constant(0);
 	}
 
+	if(symbol1.value() === 1) {
+		return symbol2;
+	}
+
+	if(symbol2.value() === 1) {
+		return symbol1;
+	}
+
+	if(!symbol1 || !symbol2) {
+		throw "Need 2 value values to multiply";
+	}
+
 	var that = mx.symbol();
 
 	that.__class = "mx.multiply";
