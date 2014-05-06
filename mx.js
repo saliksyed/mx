@@ -1,5 +1,12 @@
 
-var mx = exports || {};
+var mx;
+
+try {
+	mx = exports;
+} catch(err) {
+	mx = {};
+}
+
 
 // GOAL 1: get it working on simple non matrix expressions
 // GOAL 2: get it working on matrix expressions
@@ -44,6 +51,14 @@ mx.symbol = function() {
 		return null;
 	};
 
+	/**
+	 * Returns the string representation of the symbol
+	 * @return {String} string representation of the symbol
+	 */
+	that.toString = function() {
+		return null;
+	};
+
 	return that;
 };
 
@@ -71,6 +86,15 @@ mx.constant = function(value) {
 		// TODO: if wrt to matrix, need to match dimensions!
 		return mx.constant(0);
 	};
+
+	/**
+	 * Returns the string representation of the symbol
+	 * @return {String} string representation of the symbol
+	 */
+	that.toString = function() {
+		return '' + value;
+	};
+
 	return that;
 };
 
@@ -106,10 +130,20 @@ mx.scalar = function(name) {
 		}
 	};
 
+	/**
+	 * Returns the string representation of the symbol
+	 * @return {String} string representation of the symbol
+	 */
+	that.toString = function() {
+		return name;
+	};
+
 	return that;
 };
 
 mx.multiply = function(symbol1, symbol2) {
+
+	// basic optimizations:
 	if (symbol1.value() === 0 || symbol2.value() === 0) {
 		return mx.constant(0);
 	}
@@ -121,6 +155,10 @@ mx.multiply = function(symbol1, symbol2) {
 	if(symbol2.value() === 1) {
 		return symbol1;
 	}
+	
+	if(symbol2.value() !== null && symbol1.value() !== null) {
+		return mx.constant(symbol2.value() * symbol.value());
+	}
 
 	if(!symbol1 || !symbol2) {
 		throw "Need 2 value values to multiply";
@@ -131,23 +169,38 @@ mx.multiply = function(symbol1, symbol2) {
 	that.__class = "mx.multiply";
 
 	that.value = function() {
+		if (symbol1.value() === null || symbol2.value() === null) return null;
 		return symbol1.value() * symbol2.value();
 	};
 	
 	that.differentiate = function(by) {
 		return mx.add(mx.multiply(symbol1.differentiate(by), symbol2), mx.multiply(symbol2.differentiate(by), symbol1));
 	};
+
+	/**
+	 * Returns the string representation of the symbol
+	 * @return {String} string representation of the symbol
+	 */
+	that.toString = function() {
+		return "(" + symbol1.toString() + ") * (" + symbol2.toString() + ")";
+	};
+
 	return that;
 };
 
 mx.add = function(symbol1, symbol2) {
-
+	// basic optimizations
 	if (symbol1.value() === 0) {
 		return symbol2;
 	}
 
 	if (symbol2.value() === 0) {
 		return symbol1;
+	}
+
+
+	if(symbol2.value() !== null && symbol1.value() !== null) {
+		return mx.constant(symbol2.value() + symbol1.value());
 	}
 
 	if(!symbol1 || !symbol2) {
@@ -158,11 +211,20 @@ mx.add = function(symbol1, symbol2) {
 	that.__class = "mx.add";
 
 	that.value = function() {
+		if (symbol1.value() === null || symbol2.value() === null) return null;
 		return symbol1.value() + symbol2.value();
 	};
 	
 	that.differentiate = function(by) {
 		return mx.add(symbol1.differentiate(by), symbol2.differentiate(by));
+	};
+
+	/**
+	 * Returns the string representation of the symbol
+	 * @return {String} string representation of the symbol
+	 */
+	that.toString = function() {
+		return "(" + symbol1.toString() + ") + (" + symbol2.toString() + ")";
 	};
 
 	return that;
@@ -179,6 +241,10 @@ mx.divide = function(g, h) {
 		return g;
 	}
 
+	if (g.value() !== null && h.value() !== null) {
+		return mx.constant(g.value() / h.value());
+	}
+
 	that.__class = "mx.divide";
 	
 	/**
@@ -186,7 +252,8 @@ mx.divide = function(g, h) {
 	 * @return {Number} The value of the division
 	 */
 	that.value = function() {
-		return symbol1.value() / symbol2.value();
+		if (g.value() === null || h.value() === null) return null;
+		return g.value() / h.value();
 	};
 
 	/**
@@ -196,6 +263,14 @@ mx.divide = function(g, h) {
 	 */
 	that.differentiate = function(by) {
 		return mx.divide(mx.subtract(mx.multiply(g.differentiate(by), h), mx.multiply(h.differentiate(by), g)),mx.multiply(h,h));
+	};
+
+	/**
+	 * Returns the string representation of the symbol
+	 * @return {String} string representation of the symbol
+	 */
+	that.toString = function() {
+		return "(" + symbol1.toString() + ") / (" + symbol2.toString() + ")";
 	};
 };
 
@@ -210,7 +285,7 @@ mx.expression = function() {
 
 	that.__class = "mx.expression";
 
-	that.evaluate = function(variables, values) {
+	that.evaluate = function(valueMap) {
 		return null;
 	};
 

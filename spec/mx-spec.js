@@ -148,9 +148,8 @@ describe('mx.add', function() {
 		var xplusy = mx.add(x,y);
 
 		var d_dx_xplusy = xplusy.differentiate(x);
-
 		var d_dy_xplusy = xplusy.differentiate(y);
-		console.log(d_dx_xplusy.name());
+		
 		expect(d_dx_xplusy.value()).toBe(1);
 		expect(d_dy_xplusy.value()).toBe(1);
 	});
@@ -168,3 +167,38 @@ describe('mx.add', function() {
 
 
 
+describe('simple derivatives', function() {
+
+	it('should work for 5*x+3', function() {
+		var x = mx.scalar('x');
+		var five = mx.constant(5);
+		var three = mx.constant(3);
+
+		var fivexplus3 = mx.add(mx.multiply(five,x), three);
+		
+		expect(fivexplus3.differentiate(x).value()).toBe(5);
+	});
+
+	it('should work for 5*x+3*x', function() {
+		var x = mx.scalar('x');
+		var five = mx.constant(5);
+		var three = mx.constant(3);
+
+		var fivexplus3 = mx.add(mx.multiply(five,x), mx.multiply(three,x));
+		
+		expect(fivexplus3.differentiate(x).value()).toBe(8);
+	});
+
+	it('should work for x+x+x+x', function() {
+		var x = mx.scalar('x');
+		var fourx = mx.add(x,mx.add(x,mx.add(x,x)));
+		expect(fourx.differentiate(x).value()).toBe(4);
+	});
+
+	it('should work for x*x', function() {
+		var x = mx.scalar('x');
+		var xtimesx = mx.multiply(x,x);
+		expect(xtimesx.differentiate(x)).toBe(mx.add(x,x));
+	});
+
+});
