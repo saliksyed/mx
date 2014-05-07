@@ -69,34 +69,28 @@ mx.symbol = function() {
 
 	// Syntactic sugar methods
 	that.times = function(s) {
-		if (!s.className) s = $$(s);
-		return mx.multiply(that,s);
+		return mx.multiply(that, $$(s));
 	};
 
 	that.plus = function(s) {
-		if (!s.className) s = $$(s);
-		return mx.add(that,s);
+		return mx.add(that, $$(s));
 	};
 
 	that.pow = function(s) {
-		if (!s.className) s = $$(s);
-		return mx.pow(that, s);
+		return mx.pow(that, $$(s));
 	};
 
 	that.dividedBy = function(s) {
-		if (!s.className) s = $$(s);
-		return mx.divide(that, s);
+		return mx.divide(that, $$(s));
 	};
 
 
 	that.minus = function(s) {
-		if (!s.className) s = $$(s);
-		return mx.subtract(that, s);
+		return mx.subtract(that, $$(s));
 	};
 
 	that.derivative = function(s) {
-		if (!s.className) s = $$(s);
-		return that.differentiate(s);
+		return that.differentiate($$(s));
 	};
 
 	return that;
@@ -668,6 +662,7 @@ mx.__.extractSymbols = function(symbol1, symbol2) {
 
 // setup mx helper function:
 window.$$ = function (d) {
+	if (d.__class) return d;
 	if (isNaN(d)) return mx.scalar(d);
 	return mx.constant(d);
 };
