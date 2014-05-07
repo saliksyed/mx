@@ -94,6 +94,11 @@ mx.symbol = function() {
 		return mx.subtract(that, s);
 	};
 
+	that.derivative = function(s) {
+		if (!s.className) s = $$(s);
+		return that.differentiate(s);
+	};
+
 	return that;
 };
 
