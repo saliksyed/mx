@@ -29,7 +29,7 @@ mx.symbol = function() {
 	 * or null if this is ill defined
 	 * @return {Number} value
 	 */
-	that.value = function() {
+	that.value = function(valueMap) {
 		return null;
 	};
 
@@ -59,6 +59,36 @@ mx.symbol = function() {
 		return null;
 	};
 
+	/**
+	 * Returns all of the symbols that are child elems
+	 * @return {Array<mx.symbol>} All child symbols of this symbol
+	 */
+	that.getSymbols = function() {
+		return [];
+	};
+
+	// Syntactic sugar methods
+	that.times = function(s) {
+		return mx.multiply(that,s);
+	};
+
+	that.plus = function(s) {
+		return mx.add(that,s);
+	};
+
+	that.pow = function(s) {
+		return mx.pow(that, s);
+	};
+
+	that.dividedBy = function(s) {
+		return mx.divide(that, s);
+	};
+
+
+	that.minus = function(s) {
+		return mx.subtract(that, s);
+	};
+
 	return that;
 };
 
@@ -73,7 +103,7 @@ mx.constant = function(value) {
 	 * Returns the current value of the symbol
 	 * @return {Number} value
 	 */
-	that.value = function() {
+	that.value = function(valueMap) {
 		return value;
 	};
 
@@ -117,6 +147,16 @@ mx.scalar = function(name) {
 	};
 
 	/**
+	 * Returns the value of the scalar or null if ill defined
+	 * @param  {Object} valueMap Map from variable names to values
+	 * @return {Number}          the value
+	 */
+	that.value = function(valueMap) {
+		if (!valueMap || valueMap[name] === undefined) return null;
+		return valueMap[name];
+	};
+
+	/**
 	 * Returns this symbol differentiated by the argument symbol
 	 * @param  {mx.symbol} by Symbol to take derivative with respect to
 	 * @return {mx.symbol}    The differentiated value or null if error
@@ -138,12 +178,20 @@ mx.scalar = function(name) {
 		return name;
 	};
 
+	/**
+	 * Returns all of the symbols that are child elems
+	 * @return {Array<mx.symbol>} All child symbols of this symbol
+	 */
+	that.getSymbols = function() {
+		return [that];
+	};
+
 	return that;
 };
 
 mx.multiply = function(symbol1, symbol2) {
 
-	// basic optimizations:
+	// basic optimizations for multiplying by identity constants:
 	if (symbol1.value() === 0 || symbol2.value() === 0) {
 		return mx.constant(0);
 	}
@@ -168,9 +216,9 @@ mx.multiply = function(symbol1, symbol2) {
 
 	that.__class = "mx.multiply";
 
-	that.value = function() {
-		if (symbol1.value() === null || symbol2.value() === null) return null;
-		return symbol1.value() * symbol2.value();
+	that.value = function(valueMap) {
+		if (symbol1.value(valueMap) === null || symbol2.value(valueMap) === null) return null;
+		return symbol1.value(valueMap) * symbol2.value(valueMap);
 	};
 	
 	that.differentiate = function(by) {
@@ -184,6 +232,15 @@ mx.multiply = function(symbol1, symbol2) {
 	that.toString = function() {
 		return "(" + symbol1.toString() + ") * (" + symbol2.toString() + ")";
 	};
+
+	/**
+	 * Returns all of the symbols that are child elems
+	 * @return {Array<mx.symbol>} All child symbols of this symbol
+	 */
+	that.getSymbols = function() {
+		return mx.__.extractSymbols(symbol1, symbol2);
+	};
+
 
 	return that;
 };
@@ -210,9 +267,9 @@ mx.add = function(symbol1, symbol2) {
 
 	that.__class = "mx.add";
 
-	that.value = function() {
-		if (symbol1.value() === null || symbol2.value() === null) return null;
-		return symbol1.value() + symbol2.value();
+	that.value = function(valueMap) {
+		if (symbol1.value(valueMap) === null || symbol2.value(valueMap) === null) return null;
+		return symbol1.value(valueMap) + symbol2.value(valueMap);
 	};
 	
 	that.differentiate = function(by) {
@@ -225,6 +282,14 @@ mx.add = function(symbol1, symbol2) {
 	 */
 	that.toString = function() {
 		return "(" + symbol1.toString() + ") + (" + symbol2.toString() + ")";
+	};
+
+	/**
+	 * Returns all of the symbols that are child elems
+	 * @return {Array<mx.symbol>} All child symbols of this symbol
+	 */
+	that.getSymbols = function() {
+		return mx.__.extractSymbols(symbol1, symbol2);
 	};
 
 	return that;
@@ -251,9 +316,9 @@ mx.divide = function(g, h) {
 	 * Returns the value of the division
 	 * @return {Number} The value of the division
 	 */
-	that.value = function() {
-		if (g.value() === null || h.value() === null) return null;
-		return g.value() / h.value();
+	that.value = function(valueMap) {
+		if (g.value(valueMap) === null || h.value(valueMap) === null) return null;
+		return g.value(valueMap) / h.value(valueMap);
 	};
 
 	/**
@@ -272,6 +337,14 @@ mx.divide = function(g, h) {
 	that.toString = function() {
 		return "(" + symbol1.toString() + ") / (" + symbol2.toString() + ")";
 	};
+
+	/**
+	 * Returns all of the symbols that are child elems
+	 * @return {Array<mx.symbol>} All child symbols of this symbol
+	 */
+	that.getSymbols = function() {
+		return mx.__.extractSymbols(h, g);
+	};
 };
 
 
@@ -280,51 +353,225 @@ mx.subtract = function(symbol1, symbol2) {
 	return mx.add(mx.multiply(mx.constant(-1), symbol2), symbol1);
 };
 
-mx.expression = function() {
+
+
+mx.sin = function(symbol) {
 	var that = mx.symbol();
 
-	that.__class = "mx.expression";
+	that.__class = "mx.sin";
 
-	that.evaluate = function(valueMap) {
-		return null;
+	/**
+	 * Differentiates 
+	 * @param  {mx.symbol} by the symbol to take the derivative with respect to
+	 * @return {mx.symbol}    differentiated expression
+	 */
+	that.differentiate = function(by) {
+		return mx.multiply(mx.cos(by), symbol.differentiate(by));
+	};
+
+	/**
+	 * Returns the value of the division
+	 * @return {Number} The value of the division
+	 */
+	that.value = function(valueMap) {
+		if (symbol.value(valueMap) === null) return null;
+		return Math.sin(symbol.value(valueMap));
+	};
+
+	/**
+	 * Returns the string representation of the symbol
+	 * @return {String} string representation of the symbol
+	 */
+	that.toString = function() {
+		return "sin(" + symbol.toString() + ")";
+	};
+
+	/**
+	 * Returns all of the symbols that are child elems
+	 * @return {Array<mx.symbol>} All child symbols of this symbol
+	 */
+	that.getSymbols = function() {
+		return symbol.getSymbols();
 	};
 
 	return that;
 };
 
-/**
-
-mx.pow = function(symbolBase, symbolPower) {
-	// TODO
-};
-
-mx.log = function(symbol) {
-	// TODO
-};
-
-mx.sin = function(symbol) {
-	
-};
 
 mx.cos = function(symbol) {
-	// TODO
-};
+	var that = mx.symbol();
 
-mx.exp = function() {
-	// TODO
+	that.__class = "mx.cos";
+
+	/**
+	 * Differentiates 
+	 * @param  {mx.symbol} by the symbol to take the derivative with respect to
+	 * @return {mx.symbol}    differentiated expression
+	 */
+	that.differentiate = function(by) {
+		return mx.multiply(mx.multiply(mx.constant(-1), mx.sin(by)), symbol.differentiate(by));
+	};
+
+	/**
+	 * Returns the value of the division
+	 * @return {Number} The value of the division
+	 */
+	that.value = function(valueMap) {
+		if (symbol.value(valueMap) === null) return null;
+		return Math.cos(symbol.value(valueMap));
+	};
+
+	/**
+	 * Returns the string representation of the symbol
+	 * @return {String} string representation of the symbol
+	 */
+	that.toString = function() {
+		return "cos(" + symbol.toString() + ")";
+	};
+
+	/**
+	 * Returns all of the symbols that are child elems
+	 * @return {Array<mx.symbol>} All child symbols of this symbol
+	 */
+	that.getSymbols = function() {
+		return symbol.getSymbols();
+	};
+
+	return that;
 };
 
 mx.tan = function(symbol) {
 	return mx.divide(mx.sin(symbol), mx.cos(symbol));
 };
 
-// TODO PART 2:
+mx.pow = function(symbolBase, symbolPower) {
+	var that = mx.symbol();
 
-mx.matrix = function() {
+	if (symbolPower.value() === null) {
+		throw "Pow exponent must be a real number" + symbolPower.toString();
+	}
+
+	if (symbolPower.value() === 1) {
+		return symbolBase;
+	}
+
+	that.__class = "mx.pow";
+
+	/**
+	 * Differentiates 
+	 * @param  {mx.symbol} by the symbol to take the derivative with respect to
+	 * @return {mx.symbol}    differentiated expression
+	 */
+	that.differentiate = function(by) {
+		return mx.multiply (symbolBase.differentiate(by), mx.multiply(mx.constant(symbolPower.value()), mx.pow(symbolBase, mx.constant(symbolPower.value() - 1))));
+	};
+
+	/**
+	 * Returns the value of taking the power
+	 * @return {Number} The value of pow function
+	 */
+	that.value = function(valueMap) {
+		if (symbolBase.value(valueMap) === null || symbolPower.value(valueMap) === null) return null;
+		return Math.pow(symbolBase.value(valueMap), symbolPower.value(valueMap));
+	};
+
+	/**
+	 * Returns the string representation of the symbol
+	 * @return {String} string representation of the symbol
+	 */
+	that.toString = function() {
+		return "(" + symbolBase.toString() + ")^"+symbolPower.value();
+	};
+
+	/**
+	 * Returns all of the symbols that are child elems
+	 * @return {Array<mx.symbol>} All child symbols of this symbol
+	 */
+	that.getSymbols = function() {
+		return symbolBase.getSymbols();
+	};
+
+	return that;
+};
+
+
+mx.log = function(symbol) {
 	// TODO
 };
 
-mx.transpose = function() {
 
+mx.exp = function() {
+	// TODO
 };
-**/
+
+
+/**
+ * Checks if the two symbols are equivalent by evaluating them
+ * at many points and checking the result
+ * @param  {mx.symbol} symbol1 first symbol
+ * @param  {mx.symbol} symbol2 second symbol
+ * @return {Boolean}         Whether or not the two symbols are equivalent
+ */
+
+mx.equal = function(symbol1, symbol2, eps, numSamplePoints, rangeMin, rangeMax) {
+	if (!eps) eps = mx.__.EPSILON;
+	if (!numSamplePoints) numSamplePoints = mx.__.EQUALITY_CHECK_SAMPLES;
+
+	if (!rangeMin || !rangeMax){
+		rangeMin = -mx.__.EQUALITY_CHECK_RANGE;
+		rangeMax = mx.__.EQUALITY_CHECK_RANGE;
+	}
+
+	var variables = mx.__.extractSymbols(symbol1, symbol2);
+	var variableNames = [];
+	for (var i = 0; i < variables.length; i++) {
+		variableNames.push(variables[i].name());
+	}
+
+	for (i = 0; i < numSamplePoints; i++) {
+		var values = {};
+		// initialize random parameters to the function
+		for (var j = 0; j < variableNames.length; j++) {
+			var r = Math.random();
+			values[variableNames[j]] = (rangeMax - rangeMin) * r + rangeMin;
+		}
+		// evaluate each symbol and check that they are within epsilon:
+		if (Math.abs(symbol1.value(values) - symbol2.value(values)) > eps) {
+			return false;
+		}
+	}
+	return true;
+};
+
+// Private functions
+mx.__ = {};
+mx.__.EPSILON = 0.000001;
+mx.__.EQUALITY_CHECK_SAMPLES = 100;
+mx.__.EQUALITY_CHECK_RANGE = 999999;
+
+mx.__.extractSymbols = function(symbol1, symbol2) {
+	var seen = {};
+
+	var list1 = symbol1.getSymbols();
+	
+	for (var i = 0; i < list1.length; i++) {
+		seen[list1[i].name()] = true;
+	}
+
+	if (!symbol2) return list1;
+
+	var list2 = symbol2.getSymbols();
+
+	for (var j = 0; j < list2.length; j++) {
+		if (!seen[list2[j].name()]) {
+			list1.push(list2[j]);
+		}
+	}
+	return list1;
+};
+
+// setup mx helper function:
+window.$$ = function (d) {
+	if (isNaN(d)) return mx.scalar(d);
+	return mx.constant(d);
+};

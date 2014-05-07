@@ -165,7 +165,11 @@ describe('mx.add', function() {
 	});
 });
 
-
+// TODO: mx.subtract
+// TODO: mx.sin
+// TODO: mx.cos
+// TODO: mx.tan
+// TODO: mx.pow
 
 describe('simple derivatives', function() {
 
@@ -198,7 +202,7 @@ describe('simple derivatives', function() {
 	it('should work for x*x', function() {
 		var x = mx.scalar('x');
 		var xtimesx = mx.multiply(x,x);
-		expect(xtimesx.differentiate(x)).toBe(mx.add(x,x));
+		expect(xtimesx.differentiate(x).toString()).toBe(mx.add(x,x).toString());
 	});
 
 });
