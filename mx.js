@@ -505,15 +505,101 @@ mx.pow = function(symbolBase, symbolPower) {
 };
 
 
-mx.log = function(symbol) {
-	// TODO
+
+mx.ln = function(symbol) {
+	var that = mx.symbol();
+
+	if (symbol.value() === 1) {
+		return mx.constant(0);
+	}
+
+	that.__class = "mx.ln";
+
+	/**
+	 * Differentiates 
+	 * @param  {mx.symbol} by the symbol to take the derivative with respect to
+	 * @return {mx.symbol}    differentiated expression
+	 */
+	that.differentiate = function(by) {
+		return mx.multiply(mx.divide(symbol.differentiate(by), symbol));
+	};
+
+	/**
+	 * Returns the value of taking the power
+	 * @return {Number} The value of pow function
+	 */
+	that.value = function(valueMap) {
+		if (symbol.value(valueMap) === null) return null;
+		return Math.log(symbol.value(valueMap));
+	};
+
+	/**
+	 * Returns the string representation of the symbol
+	 * @return {String} string representation of the symbol
+	 */
+	that.toString = function() {
+		return "ln(" + symbol.toString() + ")";
+	};
+
+	/**
+	 * Returns all of the symbols that are child elems
+	 * @return {Array<mx.symbol>} All child symbols of this symbol
+	 */
+	that.getSymbols = function() {
+		return symbol.getSymbols();
+	};
+
+	return that;
 };
 
 
-mx.exp = function() {
-	// TODO
-};
 
+
+mx.exp = function(symbol) {
+	var that = mx.symbol();
+
+	if (symbol.value() === 0) {
+		return mx.constant(1);
+	}
+
+	that.__class = "mx.exp";
+
+	/**
+	 * Differentiates 
+	 * @param  {mx.symbol} by the symbol to take the derivative with respect to
+	 * @return {mx.symbol}    differentiated expression
+	 */
+	that.differentiate = function(by) {
+		return mx.multiply(symbol.differentiate(by), mx.exp(symbol));
+	};
+
+	/**
+	 * Returns the value of taking the power
+	 * @return {Number} The value of pow function
+	 */
+	that.value = function(valueMap) {
+		if (symbol.value(valueMap) === null) return null;
+		return Math.exp(symbol.value(valueMap));
+	};
+
+	/**
+	 * Returns the string representation of the symbol
+	 * @return {String} string representation of the symbol
+	 */
+	that.toString = function() {
+		return "exp(" + symbol.toString() + ")";
+	};
+
+	/**
+	 * Returns all of the symbols that are child elems
+	 * @return {Array<mx.symbol>} All child symbols of this symbol
+	 */
+	that.getSymbols = function() {
+		return symbol.getSymbols();
+	};
+
+	return that;
+};
 
 /**
  * Checks if the two symbols are equivalent by evaluating them

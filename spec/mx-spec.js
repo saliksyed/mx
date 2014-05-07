@@ -170,6 +170,8 @@ describe('mx.add', function() {
 // TODO: mx.cos
 // TODO: mx.tan
 // TODO: mx.pow
+// TODO: mx.ln
+// TODO: mx.exp
 
 describe('simple derivatives', function() {
 
