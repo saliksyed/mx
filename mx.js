@@ -69,23 +69,28 @@ mx.symbol = function() {
 
 	// Syntactic sugar methods
 	that.times = function(s) {
+		if (!s.className) s = $$(s);
 		return mx.multiply(that,s);
 	};
 
 	that.plus = function(s) {
+		if (!s.className) s = $$(s);
 		return mx.add(that,s);
 	};
 
 	that.pow = function(s) {
+		if (!s.className) s = $$(s);
 		return mx.pow(that, s);
 	};
 
 	that.dividedBy = function(s) {
+		if (!s.className) s = $$(s);
 		return mx.divide(that, s);
 	};
 
 
 	that.minus = function(s) {
+		if (!s.className) s = $$(s);
 		return mx.subtract(that, s);
 	};
 
