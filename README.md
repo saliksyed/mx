@@ -25,10 +25,8 @@ console.log(d.toString());
 ```
 
 #### Cheat Sheet
-
-#### Basics
-* `$$(5)` : Any number within `$$()` creates a constant
-* `$$('x')` : Any string within `$$()` creates a variable
+* `$$(5)` : 5
+* `$$('x')` : x
 * `$$('x').add(5)` : x+5
 * `$$('x').minus(5)` : x-5
 * `$$('x').times(5)` : x*5
@@ -36,12 +34,8 @@ console.log(d.toString());
 * `$$('x').pow(5)` : x^5
 * `$$('x').derivative('x')` : d/dx x
 * `$$('y').minus(4).times($$('x').plus(5))` : (y-4) * (x+5)
-
-#### Exponents
 * `mx.exp('x')` : e^x
 * `mx.ln('x')` : ln(x)
-
-#### Trigonometric
 * `mx.cos('x')` : cos(x)
 * `mx.sin('x')` : sin(x)
 * `mx.tan('x')` : tan(x)
