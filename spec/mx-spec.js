@@ -132,6 +132,14 @@ describe('mx.multiply', function() {
 		expect(d_dx_xy.name()).toBe('y');
 		expect(d_dy_xy.name()).toBe('x');
 	});
+
+	it('should return the right sub symbols', function() {
+		var x = $$('x');
+		var y = $$('y');
+		var xtimesy = mx.multiply(x,y);
+		expect(xtimesy.getSymbols()[0].name()).toBe('x');
+		expect(xtimesy.getSymbols()[1].name()).toBe('y');
+	});
 });
 
 

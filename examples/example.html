@@ -8,10 +8,12 @@
       <script>
         mx.nice();
         
-        cos('x').times(sin('x'))
+        cos('x').times(sin('x'.times('y')))
         .derivative('x')
         .times('y')
         .pow(-1);
+
+        console.log('x'.times('y').getSymbols());
 
       </script>
   </body>
