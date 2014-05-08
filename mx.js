@@ -304,7 +304,7 @@ mx.add = function(symbol1, symbol2) {
 
 
 mx.divide = function(g, h) {
-	
+
 	if (h.value() === 0) {
 		throw "Cannot divide by 0";
 	}
@@ -316,6 +316,8 @@ mx.divide = function(g, h) {
 	if (g.value() !== null && h.value() !== null) {
 		return mx.constant(g.value() / h.value());
 	}
+	
+	var that = mx.symbol();
 
 	that.__class = "mx.divide";
 	
@@ -342,7 +344,7 @@ mx.divide = function(g, h) {
 	 * @return {String} string representation of the symbol
 	 */
 	that.toString = function() {
-		return "(" + symbol1.toString() + ") / (" + symbol2.toString() + ")";
+		return "(" + g.toString() + ") / (" + h.toString() + ")";
 	};
 
 	/**
@@ -352,6 +354,8 @@ mx.divide = function(g, h) {
 	that.getSymbols = function() {
 		return mx.__.extractSymbols(h, g);
 	};
+
+	return that;
 };
 
 
@@ -472,6 +476,10 @@ mx.pow = function(symbolBase, symbolPower) {
 		return symbolBase;
 	}
 
+	if (symbolBase.value() !== null) {
+		return mx.constant(Math.pow(symbolBase.value(), symbolPower.value()));
+	}
+
 	that.__class = "mx.pow";
 
 	/**
@@ -516,8 +524,14 @@ mx.pow = function(symbolBase, symbolPower) {
 mx.ln = function(symbol) {
 	var that = mx.symbol();
 
-	if (symbol.value() === 1) {
-		return mx.constant(0);
+	if (symbol.value() !== null) {
+		if (symbol.value() < mx.__.EPSILON)
+			throw "Invalid input value for ln";
+		return mx.constant(Math.log(symbol.value()));
+	}
+
+	if (symbol.className() === "mx.exp") {
+		return symbol.exponent();
 	}
 
 	that.__class = "mx.ln";
@@ -528,7 +542,7 @@ mx.ln = function(symbol) {
 	 * @return {mx.symbol}    differentiated expression
 	 */
 	that.differentiate = function(by) {
-		return mx.multiply(mx.divide(symbol.differentiate(by), symbol));
+		return mx.divide(symbol.differentiate(by), symbol);
 	};
 
 	/**
@@ -556,6 +570,14 @@ mx.ln = function(symbol) {
 		return symbol.getSymbols();
 	};
 
+	/**
+	 * Returns the base symbol
+	 * @return {mx.symbol} base
+	 */
+	that.base = function() {
+		return symbol;
+	};
+
 	return that;
 };
 
@@ -565,8 +587,11 @@ mx.ln = function(symbol) {
 mx.exp = function(symbol) {
 	var that = mx.symbol();
 
-	if (symbol.value() === 0) {
-		return mx.constant(1);
+	if (symbol.value() !== null) {
+		return mx.constant(Math.exp(symbol.value()));
+	}
+	if (symbol.className() === "mx.ln") {
+		return symbol.base();
 	}
 
 	that.__class = "mx.exp";
@@ -603,6 +628,14 @@ mx.exp = function(symbol) {
 	 */
 	that.getSymbols = function() {
 		return symbol.getSymbols();
+	};
+
+	/**
+	 * Returns the exponent symbol
+	 * @return {mx.symbol} exponent
+	 */
+	that.exponent = function() {
+		return symbol;
 	};
 
 	return that;

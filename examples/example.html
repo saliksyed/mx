@@ -10,8 +10,7 @@
       	console.log($$('x').times(3).pow(4).times('x').derivative('y').toString());
         console.log($$('x').times(3).pow(4).times('x').derivative('x').toString());
         console.log($$('x').times('x').times('x').derivative('x').toString());
-        console.log($$('x').times('x').times('y').times('x').derivative($$('x').times('y')).toString());
-        
+        mx.equal(mx.ln($$('x').pow(3)).derivative('x'), $$(3).dividedBy('x'));
       </script>
   </body>
 </html>

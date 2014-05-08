@@ -228,12 +228,100 @@ describe('mx.subtract', function() {
 	});
 });
 
-// TODO: mx.sin
-// TODO: mx.cos
-// TODO: mx.tan
-// TODO: mx.pow
-// TODO: mx.ln
-// TODO: mx.exp
+
+describe('mx.tan', function() {
+
+	it('should throw an error for pi/2', function() {
+		var test1 = function() {
+			return mx.tan($$(Math.PI/2));
+		};
+
+		expect(test1).toThrow();
+	});
+
+	it('should give the right value for 0', function() {
+		expect(mx.tan($$(0)).value()).toBe(0);
+	});
+
+	it('should have the right derivative', function() {
+
+	});
+
+});
+	
+
+describe('mx.pow', function() {
+	
+	it('should return 1 if the power is 0', function() {
+
+	});
+
+	it('should return the same expression if power is 1', function() {
+
+	});
+
+
+	it('should return a number if base is constant', function() {
+
+	});
+
+	it('should fail if the exponent is not a number', function() {
+
+	});
+
+	it('should give the correct derivative for x^3', function() {
+
+	});
+});
+
+describe('mx.ln', function() {
+	
+	it('should return the correct value', function() {
+		expect(mx.ln($$(1)).value()).toBe(0);
+	});
+
+	it('should fail on small or negative values', function() {
+		var test1 = function() {
+			mx.ln($$(0));
+		};
+
+		var test2 = function() {
+			mx.ln($$(-5));
+		};
+		expect(test1).toThrow();
+		expect(test2).toThrow();
+	});
+
+	it('should give the correct derivative for x^3', function() {
+		expect(mx.equal(mx.ln($$('x').pow(3)).derivative('x'), $$(3).dividedBy('x'))).toBe(true);
+	});
+});
+
+describe('mx.exp', function() {
+	
+	it('should return 1 if the power is 0', function() {
+
+	});
+
+	it('should return the same expression if power is 1', function() {
+
+	});
+
+
+	it('should return a number if base is constant', function() {
+
+	});
+
+	it('should fail if the exponent is not a number', function() {
+
+	});
+
+	it('should give the correct derivative for x^3', function() {
+
+	});
+});
+
+
 // TODO: mx.__.estimateDerivative 
 
 describe('mx.sin', function() {
