@@ -215,6 +215,9 @@ mx.scalar = function(name) {
 
 mx.multiply = function(symbol1, symbol2) {
 
+	symbol1 = $$(symbol1);
+	symbol2 = $$(symbol2);
+	
 	// basic optimizations for multiplying by identity constants:
 	if (symbol1.value() === 0 || symbol2.value() === 0) {
 		return mx.constant(0);
@@ -270,6 +273,10 @@ mx.multiply = function(symbol1, symbol2) {
 };
 
 mx.add = function(symbol1, symbol2) {
+
+	symbol1 = $$(symbol1);
+	symbol2 = $$(symbol2);
+
 	// basic optimizations
 	if (symbol1.value() === 0) {
 		return symbol2;
@@ -321,6 +328,9 @@ mx.add = function(symbol1, symbol2) {
 
 
 mx.divide = function(g, h) {
+
+	g = $$(g);
+	h = $$(h);
 
 	if (h.value() !== null && Math.abs(h.value()) < mx.__.EPSILON) {
 		throw "Cannot divide by 0";
@@ -384,6 +394,9 @@ mx.subtract = function(symbol1, symbol2) {
 
 
 mx.sin = function(symbol) {
+
+	symbol = $$(symbol);
+
 	// simplify if evaluatable
 	if (symbol.value() !== null) {
 		return $$(Math.sin(symbol.value()));
@@ -432,6 +445,9 @@ mx.sin = function(symbol) {
 
 
 mx.cos = function(symbol) {
+
+	symbol = $$(symbol);
+
 	// simplify if evaluatable
 	if (symbol.value() !== null) {
 		return $$(Math.cos(symbol.value()));
@@ -484,6 +500,9 @@ mx.tan = function(symbol) {
 
 mx.pow = function(symbolBase, symbolPower) {
 	var that = mx.symbol();
+
+	symbolPower = $$(symbolPower);
+	symbolBase = $$(symbolBase);
 
 	if (symbolPower.value() === null) {
 		throw "Pow exponent must be a real number" + symbolPower.toString();
@@ -544,6 +563,8 @@ mx.pow = function(symbolBase, symbolPower) {
 
 mx.ln = function(symbol) {
 	var that = mx.symbol();
+
+	symbol = $$(symbol);
 
 	if (symbol.value() !== null) {
 		if (symbol.value() < mx.__.EPSILON)
@@ -607,6 +628,8 @@ mx.ln = function(symbol) {
 
 mx.exp = function(symbol) {
 	var that = mx.symbol();
+
+	symbol = $$(symbol);
 
 	if (symbol.value() !== null) {
 		return mx.constant(Math.exp(symbol.value()));
@@ -672,6 +695,10 @@ mx.exp = function(symbol) {
 
 mx.equal = function(symbol1, symbol2, eps, numSamplePoints, rangeMin, rangeMax) {
 	if (!eps) eps = mx.__.EPSILON;
+
+	symbol1 = $$(symbol1);
+	symbol2 = $$(symbol2);
+
 	if (!numSamplePoints) numSamplePoints = mx.__.EQUALITY_CHECK_SAMPLES;
 
 	if (!rangeMin || !rangeMax){
@@ -720,6 +747,9 @@ mx.__.EQUALITY_CHECK_RANGE = 999999;
  */
 mx.__.estimateDerivative = function(symbol, by, valueMap, eps) {
 	if (!eps) eps = mx.__.EPSILON;
+
+	symbol = $$(symbol);
+
 	var symbols = by.getSymbols();
 
 	// evaluate f(x1+h...xn+h)
