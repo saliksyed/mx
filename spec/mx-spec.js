@@ -151,6 +151,10 @@ describe('mx.add', function() {
 		expect(mx.add($$(0), $$('y')).name()).toBe('y');
 	});
 
+	it('should work for basic addition', function() {
+		expect(mx.add($$(5),$$(10)).value()).toEqual(15);
+		expect(mx.add($$(3),$$(10)).value()).toEqual(13);
+	});
 
 	it('should return mx.add as classname when adding scalars', function() {
 		expect(mx.add($$('x'), $$('y')).className()).toBe('mx.add');
@@ -180,7 +184,50 @@ describe('mx.add', function() {
 	});
 });
 
-// TODO: mx.subtract
+
+describe('mx.subtract', function() {
+
+	it('should throw an exception if instantiated without values', function() {
+		var test1 = function() {
+			return mx.subtract();
+		};
+		expect(test1).toThrow();
+	});
+
+	it('should optimize away 0 subtractions', function() {
+		expect(mx.subtract($$('y'), $$(0)).className()).toBe('mx.scalar');
+		expect(mx.subtract($$('y'), $$(0)).name()).toBe('y');
+	});
+
+
+	it('should return mx.add as classname when subtracting scalars', function() {
+		expect(mx.subtract($$('x'), $$('y')).className()).toBe('mx.add');
+	});
+
+	it('should differentiate correctly', function() {
+		var x = $$('x');
+		var y = $$('y');
+
+		var xplusy = x.minus(y);
+
+		var d_dx_xplusy = xplusy.derivative(x);
+		var d_dy_xplusy = xplusy.derivative(y);
+		
+		expect(d_dx_xplusy.value()).toBe(1);
+		expect(d_dy_xplusy.value()).toBe(-1);
+	});
+
+	it('should differentiate correctly', function() {
+		var x = $$('x');
+
+		var xplusx = mx.subtract(x.times($$(3)),x);
+
+		var d_dx_xplusx= xplusx.differentiate(x);
+
+		expect(d_dx_xplusx.value()).toBe(2);
+	});
+});
+
 // TODO: mx.sin
 // TODO: mx.cos
 // TODO: mx.tan
