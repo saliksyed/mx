@@ -307,25 +307,15 @@ describe('mx.ln', function() {
 
 describe('mx.exp', function() {
 	
-	it('should return 1 if the power is 0', function() {
-
-	});
-
-	it('should return the same expression if power is 1', function() {
-
-	});
-
-
 	it('should return a number if base is constant', function() {
-
+		expect(mx.exp($$(3)).className()).toBe('mx.constant');
+		expect(mx.exp($$(3))).toBeCloseTo(Math.exp(3));
 	});
 
-	it('should fail if the exponent is not a number', function() {
-
-	});
 
 	it('should give the correct derivative for x^3', function() {
-
+		var d = $$(3).times(mx.exp($$('x').pow(3))).times($$('x').pow(2));
+		expect(mx.equal(mx.exp($$('x').pow(3)).derivative('x'), d)).toBe(true);
 	});
 });
 
