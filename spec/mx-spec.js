@@ -147,8 +147,8 @@ describe('mx.add', function() {
 	});
 
 	it('should optimize away 0 additions', function() {
-		expect(mx.add(mx.constant(0), $$('y')).className()).toBe('mx.scalar');
-		expect(mx.add(mx.constant(0), $$('y')).name()).toBe('y');
+		expect(mx.add($$(0), $$('y')).className()).toBe('mx.scalar');
+		expect(mx.add($$(0), $$('y')).name()).toBe('y');
 	});
 
 
@@ -160,10 +160,10 @@ describe('mx.add', function() {
 		var x = $$('x');
 		var y = $$('y');
 
-		var xplusy = mx.add(x,y);
+		var xplusy = x.plus(y);
 
-		var d_dx_xplusy = xplusy.differentiate(x);
-		var d_dy_xplusy = xplusy.differentiate(y);
+		var d_dx_xplusy = xplusy.derivative(x);
+		var d_dy_xplusy = xplusy.derivative(y);
 		
 		expect(d_dx_xplusy.value()).toBe(1);
 		expect(d_dy_xplusy.value()).toBe(1);
@@ -187,7 +187,6 @@ describe('mx.add', function() {
 // TODO: mx.pow
 // TODO: mx.ln
 // TODO: mx.exp
-// TODO: $$
 // TODO: mx.__.estimateDerivative 
 
 describe('equal', function() {
@@ -195,6 +194,7 @@ describe('equal', function() {
 		expect(mx.equal($$('x').times(2), $$('x').plus('x'))).toBe(true);
 		expect(mx.equal($$('x').times(3), $$('x').plus('x').plus('x'))).toBe(true);
 		expect(mx.equal($$('x').pow(3), $$('x').times('x').times('x'))).toBe(true);
+		// TODO: Add more functions for robustness!
 	});
 });
 
@@ -202,33 +202,31 @@ describe('simple derivatives', function() {
 
 	it('should work for 5*x+3', function() {
 		var x = $$('x');
-		var five = mx.constant(5);
-		var three = mx.constant(3);
+		var five = $$(5);
+		var three = $$(3);
 
-		var fivexplus3 = mx.add(mx.multiply(five,x), three);
+		var fivexplus3 = five.times(x).plus(three);
 		
 		expect(fivexplus3.differentiate(x).value()).toBe(5);
 	});
 
 	it('should work for 5*x+3*x', function() {
 		var x = $$('x');
-		var five = mx.constant(5);
-		var three = mx.constant(3);
-
-		var fivexplus3 = mx.add(mx.multiply(five,x), mx.multiply(three,x));
-		
+		var five = $$(5);
+		var three = $$(3);
+		var fivexplus3 = five.times(x).plus(three.times(x));
 		expect(fivexplus3.differentiate(x).value()).toBe(8);
 	});
 
 	it('should work for x+x+x+x', function() {
 		var x = $$('x');
-		var fourx = mx.add(x,mx.add(x,mx.add(x,x)));
+		var fourx = x.plus(x).plus(x).plus(x);
 		expect(fourx.differentiate(x).value()).toBe(4);
 	});
 
 	it('should work for x*x', function() {
 		var x = $$('x');
-		var xtimesx = mx.multiply(x,x);
+		var xtimesx = x.times(x);
 		expect(xtimesx.differentiate(x).toString()).toBe(mx.add(x,x).toString());
 	});
 
