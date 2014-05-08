@@ -720,7 +720,7 @@ mx.equal = function(symbol1, symbol2, eps, numSamplePoints, rangeMin, rangeMax) 
 			values[variableNames[j]] = (rangeMax - rangeMin) * r + rangeMin;
 		}
 		// evaluate each symbol and check that they are within epsilon:
-		if (Math.abs(symbol1.value(values) - symbol2.value(values)) > eps) {
+		if (Math.abs(1 - (symbol1.value(values) / symbol2.value(values))) > eps) {
 			console.log(symbol1.value(values));
 			console.log(symbol2.value(values));
 			return false;

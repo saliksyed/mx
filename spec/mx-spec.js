@@ -415,4 +415,35 @@ describe('simple derivatives', function() {
 		expect(mx.equal(derivative, $$(estimator), 0.001)).toBe(true);
 	});
 
+	it('should work for 1/sin(cos(x))', function() {
+		var exp = mx.pow(mx.sin(mx.cos($$('x'))), -1);
+		var derivative = exp.derivative('x');
+
+		var estimator = function (valueMap) {
+			return mx.__.estimateDerivative(exp, $$('x'), valueMap, 0.00001);
+		};
+		expect(mx.equal(derivative, $$(estimator), 0.001)).toBe(true);
+	});
+
+	it('should work for (sin(cos(x)))^2', function() {
+		var exp = mx.pow(mx.sin(mx.cos($$('x'))), 2);
+		var derivative = exp.derivative('x');
+
+		var estimator = function (valueMap) {
+			return mx.__.estimateDerivative(exp, $$('x'), valueMap, 0.00001);
+		};
+		expect(mx.equal(derivative, $$(estimator), 0.001)).toBe(true);
+	});
+
+	it('should work for x^-2', function() {
+		var exp = mx.pow('x',-2);
+		var derivative = exp.derivative('x');
+
+		var estimator = function (valueMap) {
+			return mx.__.estimateDerivative(exp, $$('x'), valueMap, 0.00001);
+		};
+		expect(mx.equal(derivative, $$(estimator), 0.1)).toBe(true);
+	});
+
+
 });
