@@ -133,7 +133,24 @@ mx.constant = function(value) {
 	return that;
 };
 
+mx.op = function(fn) {
+	var that = mx.symbol();
 
+	/**
+	 * Calls the supplied function with valueMap as arg and returns the value
+	 * @param  {Object} valueMap variables names along with values
+	 * @return {Number}          value of the eval'd function
+	 */
+	that.value = function(valueMap) {
+		try {
+			return fn(valueMap);
+		} catch(err) {
+			return null;
+		}
+	};
+
+	return that;
+};
 mx.scalar = function(name) {
 	var that = mx.symbol();
 
@@ -382,7 +399,7 @@ mx.sin = function(symbol) {
 	 * @return {mx.symbol}    differentiated expression
 	 */
 	that.differentiate = function(by) {
-		return mx.multiply(mx.cos(by), symbol.differentiate(by));
+		return mx.multiply(mx.cos(symbol), symbol.differentiate(by));
 	};
 
 	/**
@@ -430,7 +447,7 @@ mx.cos = function(symbol) {
 	 * @return {mx.symbol}    differentiated expression
 	 */
 	that.differentiate = function(by) {
-		return mx.multiply(mx.multiply(mx.constant(-1), mx.sin(by)), symbol.differentiate(by));
+		return mx.multiply(mx.multiply(mx.constant(-1), mx.sin(symbol)), symbol.differentiate(by));
 	};
 
 	/**
@@ -677,6 +694,8 @@ mx.equal = function(symbol1, symbol2, eps, numSamplePoints, rangeMin, rangeMax) 
 		}
 		// evaluate each symbol and check that they are within epsilon:
 		if (Math.abs(symbol1.value(values) - symbol2.value(values)) > eps) {
+			console.log(symbol1.value(values));
+			console.log(symbol2.value(values));
 			return false;
 		}
 	}
@@ -745,6 +764,7 @@ mx.__.extractSymbols = function(symbol1, symbol2) {
 
 // setup mx helper function:
 mx.$$ = function (d) {
+	if (typeof(d) === 'function') return mx.op(d);
 	if (d.__class) return d;
 	if (isNaN(d)) return mx.scalar(d);
 	return mx.constant(d);

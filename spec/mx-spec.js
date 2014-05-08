@@ -244,7 +244,7 @@ describe('mx.tan', function() {
 	});
 
 	it('should have the right derivative', function() {
-		expect(mx.equal(mx.tan($$('x')).derivative('x'), $$(2).dividedBy(mx.cos($$(2).times('x')).plus(1)), 0.000001)).toBe(true);
+		expect(mx.equal(mx.tan($$('x')).derivative('x'), $$(2).dividedBy(mx.cos($$(2).times('x')).plus(1)), 0.01)).toBe(true);
 	});
 
 });
@@ -370,7 +370,7 @@ describe('mx.cos', function() {
 	});
 
 	it('should compute the correct derivative for cos(2x)', function() {
-		expect(mx.cos($$(2).times('x')).derivative('x').value({'x' : Math.PI/2})).toEqual(-2);
+		expect(mx.cos($$(2).times('x')).derivative('x').value({'x' : Math.PI/2})).toBeCloseTo(0, 3);
 	});
 });
 
@@ -413,6 +413,16 @@ describe('simple derivatives', function() {
 		var x = $$('x');
 		var xtimesx = x.times(x);
 		expect(xtimesx.differentiate(x).toString()).toBe(mx.add(x,x).toString());
+	});
+
+	it('should work for sin(cos(x))', function() {
+		var exp = mx.sin(mx.cos($$('x')));
+		var derivative = exp.derivative('x');
+
+		var estimator = function (valueMap) {
+			return mx.__.estimateDerivative(exp, $$('x'), valueMap, 0.00001);
+		};
+		expect(mx.equal(derivative, $$(estimator), 0.001)).toBe(true);
 	});
 
 });
