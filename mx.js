@@ -305,7 +305,7 @@ mx.add = function(symbol1, symbol2) {
 
 mx.divide = function(g, h) {
 
-	if (h.value() === 0) {
+	if (h.value() !== null && Math.abs(h.value()) < mx.__.EPSILON) {
 		throw "Cannot divide by 0";
 	}
 
@@ -681,7 +681,7 @@ mx.equal = function(symbol1, symbol2, eps, numSamplePoints, rangeMin, rangeMax) 
 
 // Private functions
 mx.__ = {};
-mx.__.EPSILON = 0.000001;
+mx.__.EPSILON = 1e-10;
 mx.__.EQUALITY_CHECK_SAMPLES = 100;
 mx.__.EQUALITY_CHECK_RANGE = 999999;
 

@@ -233,7 +233,7 @@ describe('mx.tan', function() {
 
 	it('should throw an error for pi/2', function() {
 		var test1 = function() {
-			return mx.tan($$(Math.PI/2));
+			return mx.tan($$(Math.PI/2.0));
 		};
 
 		expect(test1).toThrow();
@@ -244,7 +244,7 @@ describe('mx.tan', function() {
 	});
 
 	it('should have the right derivative', function() {
-
+		expect(mx.equal(mx.tan($$('x')).derivative('x'), $$(2).dividedBy(mx.cos($$(2).times('x')).plus(1)), 0.000001)).toBe(true);
 	});
 
 });
