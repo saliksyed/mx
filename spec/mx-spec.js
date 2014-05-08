@@ -260,6 +260,9 @@ describe('mx.pow', function() {
 		expect(mx.pow($$('x'),$$(1)).value({'x' : 88})).toBe(88);
 	});
 
+	it('should return the right answer for a floating point', function() {
+		expect(mx.pow($$('x'),$$(3)).value({'x' : 10.1})).toBe(1030.301);
+	});
 
 	it('should return a number if base is constant', function() {
 		expect(mx.pow($$(3),$$(3)).value()).toBe(27);
@@ -327,7 +330,27 @@ describe('mx.exp', function() {
 });
 
 
-// TODO: mx.__.estimateDerivative 
+describe('mx.__.estimateDerivative', function() {
+
+	it('should work for x^3 when x = 0', function() {
+		var estimated = mx.__.estimateDerivative($$('x').pow(3), $$('x'), {'x' : 0}, 0.0001);
+		var actual = 0;
+		expect(estimated).toBeCloseTo(actual);
+	});
+	
+	it('should work for x^3 when x = 10', function() {
+		var estimated = mx.__.estimateDerivative($$('x').pow(3), $$('x'), {'x' : 10}, 0.1);
+		var actual = 300;
+		expect(estimated).toBeCloseTo(actual,1);
+	});
+
+	it('should work for a constant', function() {
+		var estimated = mx.__.estimateDerivative($$(5), $$('x'), {}, 0.0001);
+		var actual = 0;
+		expect(estimated).toBeCloseTo(actual, 2);
+	});
+
+});
 
 describe('mx.sin', function() {
 	it('should simplify correctly constants', function() {

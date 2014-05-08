@@ -701,26 +701,25 @@ mx.__.EQUALITY_CHECK_RANGE = 999999;
  */
 mx.__.estimateDerivative = function(symbol, by, valueMap, eps) {
 	if (!eps) eps = mx.__.EPSILON;
-
 	var symbols = by.getSymbols();
 
 	// evaluate f(x1+h...xn+h)
 	for (var i = 0; i < symbols.length; i++) {
+		if (!valueMap[symbols[i]]) continue;
 		valueMap[symbols[i]] += eps;
 	}
 
 	var val = symbol.value(valueMap);
-
 	if (val === null) return null;
 
 	// evaluate f(x1-h...xn-h)
 	for (i = 0; i < symbols.length; i++) {
+		if (!valueMap[symbols[i]]) continue;
 		valueMap[symbols[i]] -= 2*eps;
 	}
 
 	var val2 = symbol.value(valueMap);
-
-	return (val2 - val) / 2*eps;
+	return (val - val2) / (2.0*eps);
 };
 
 mx.__.extractSymbols = function(symbol1, symbol2) {
