@@ -1,4 +1,5 @@
 var mx = require("../mx.js");
+global.$$ = mx.$$;
 
 describe('mx.symbol', function() {
 	it('should return mx.symbol as classname', function() {
@@ -76,6 +77,21 @@ describe('mx.scalar', function() {
 	});
 });
 
+describe('$$', function() {
+	it('should correctly coerce a string input to a mx.scalar', function() {
+		expect($$('x').className()).toBe('mx.scalar');
+	});
+
+	it('should correctly coerce a number input to a mx.constant', function() {
+		expect($$(5).className()).toBe('mx.constant');
+	});
+
+	it('should not change a mx.symbol instance', function() {
+		var x = $$('x');
+		expect($$(x)).toEqual(x);
+	});
+});
+
 describe('mx.multiply', function() {
 
 	it('should throw an exception if instantiated without values', function() {
@@ -87,26 +103,25 @@ describe('mx.multiply', function() {
 	});
 
 	it('should optimize away 0 multiplications', function() {
-		expect(mx.multiply(mx.constant(0), mx.scalar('y')).className()).toBe('mx.constant');
-		expect(mx.multiply(mx.constant(0), mx.scalar('y')).value()).toBe(0);
+		expect(mx.multiply($$(0), $$('y')).className()).toBe('mx.constant');
+		expect(mx.multiply($$(0), $$('y')).value()).toBe(0);
 	});
 
 	it('should optimize away 1 multiplications', function() {
-		expect(mx.multiply(mx.constant(1), mx.scalar('y')).className()).toBe('mx.scalar');
+		expect(mx.multiply($$(1), $$('y')).className()).toBe('mx.scalar');
 	});
 
 	it('should optimize away 1 multiplications', function() {
-		expect(mx.multiply(mx.scalar('y'), mx.constant(1)).className()).toBe('mx.scalar');
+		expect(mx.multiply($$('y'), $$(1)).className()).toBe('mx.scalar');
 	});
 
 	it('should return mx.multiply as classname when multiplying scalars', function() {
-		expect(mx.multiply(mx.scalar('x'), mx.scalar('y')).className()).toBe('mx.multiply');
+		expect(mx.multiply($$('x'), $$('y')).className()).toBe('mx.multiply');
 	});
 
-
 	it('should differentiate correctly', function() {
-		var x = mx.scalar('x');
-		var y = mx.scalar('y');
+		var x = $$('x');
+		var y = $$('y');
 
 		var xtimesy = mx.multiply(x,y);
 
@@ -132,18 +147,18 @@ describe('mx.add', function() {
 	});
 
 	it('should optimize away 0 additions', function() {
-		expect(mx.add(mx.constant(0), mx.scalar('y')).className()).toBe('mx.scalar');
-		expect(mx.add(mx.constant(0), mx.scalar('y')).name()).toBe('y');
+		expect(mx.add(mx.constant(0), $$('y')).className()).toBe('mx.scalar');
+		expect(mx.add(mx.constant(0), $$('y')).name()).toBe('y');
 	});
 
 
 	it('should return mx.add as classname when adding scalars', function() {
-		expect(mx.add(mx.scalar('x'), mx.scalar('y')).className()).toBe('mx.add');
+		expect(mx.add($$('x'), $$('y')).className()).toBe('mx.add');
 	});
 
 	it('should differentiate correctly', function() {
-		var x = mx.scalar('x');
-		var y = mx.scalar('y');
+		var x = $$('x');
+		var y = $$('y');
 
 		var xplusy = mx.add(x,y);
 
@@ -155,7 +170,7 @@ describe('mx.add', function() {
 	});
 
 	it('should differentiate correctly', function() {
-		var x = mx.scalar('x');
+		var x = $$('x');
 
 		var xplusx = mx.add(x,x);
 
@@ -172,11 +187,21 @@ describe('mx.add', function() {
 // TODO: mx.pow
 // TODO: mx.ln
 // TODO: mx.exp
+// TODO: $$
+// TODO: mx.__.estimateDerivative 
+
+describe('equal', function() {
+	it('should compute equal correctly', function() {
+		expect(mx.equal($$('x').times(2), $$('x').plus('x'))).toBe(true);
+		expect(mx.equal($$('x').times(3), $$('x').plus('x').plus('x'))).toBe(true);
+		expect(mx.equal($$('x').pow(3), $$('x').times('x').times('x'))).toBe(true);
+	});
+});
 
 describe('simple derivatives', function() {
 
 	it('should work for 5*x+3', function() {
-		var x = mx.scalar('x');
+		var x = $$('x');
 		var five = mx.constant(5);
 		var three = mx.constant(3);
 
@@ -186,7 +211,7 @@ describe('simple derivatives', function() {
 	});
 
 	it('should work for 5*x+3*x', function() {
-		var x = mx.scalar('x');
+		var x = $$('x');
 		var five = mx.constant(5);
 		var three = mx.constant(3);
 
@@ -196,13 +221,13 @@ describe('simple derivatives', function() {
 	});
 
 	it('should work for x+x+x+x', function() {
-		var x = mx.scalar('x');
+		var x = $$('x');
 		var fourx = mx.add(x,mx.add(x,mx.add(x,x)));
 		expect(fourx.differentiate(x).value()).toBe(4);
 	});
 
 	it('should work for x*x', function() {
-		var x = mx.scalar('x');
+		var x = $$('x');
 		var xtimesx = mx.multiply(x,x);
 		expect(xtimesx.differentiate(x).toString()).toBe(mx.add(x,x).toString());
 	});

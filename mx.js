@@ -2,6 +2,7 @@
 var mx;
 
 try {
+	// try to set mx to exports if running as node module
 	mx = exports;
 } catch(err) {
 	mx = {};
@@ -166,7 +167,9 @@ mx.scalar = function(name) {
 	 * @return {mx.symbol}    The differentiated value or null if error
 	 */
 	that.differentiate = function(by) {
-		
+		if (!by.name()) {
+			throw "Error: Cannot differentiate by " + by.toString();
+		}
 		if (by.name() === that.name()) {
 			return mx.constant(1);
 		} else {
@@ -639,6 +642,40 @@ mx.__.EPSILON = 0.000001;
 mx.__.EQUALITY_CHECK_SAMPLES = 100;
 mx.__.EQUALITY_CHECK_RANGE = 999999;
 
+/**
+ * Uses finite difference to approximate derivatives
+ * Note that the valueMap should contain values for all
+ * variables that will not be cancelled out once the expression
+ * has been evaluated.
+ * @param  {mx.symbol} symbol symbol to evaluate
+ * @param  {mx.symbol} by symbol to take derivative with respect to. Note that 
+ * @param  {Number} eps    delta for finite difference approximation (optional)
+ * @return {Number}        the evaluated derivative at that point or null if not fully determined
+ */
+mx.__.estimateDerivative = function(symbol, by, valueMap, eps) {
+	if (!eps) eps = mx.__.EPSILON;
+
+	var symbols = by.getSymbols();
+
+	// evaluate f(x1+h...xn+h)
+	for (var i = 0; i < symbols.length; i++) {
+		valueMap[symbols[i]] += eps;
+	}
+
+	var val = symbol.value(valueMap);
+
+	if (val === null) return null;
+
+	// evaluate f(x1-h...xn-h)
+	for (i = 0; i < symbols.length; i++) {
+		valueMap[symbols[i]] -= 2*eps;
+	}
+
+	var val2 = symbol.value(valueMap);
+
+	return (val2 - val) / 2*eps;
+};
+
 mx.__.extractSymbols = function(symbol1, symbol2) {
 	var seen = {};
 
@@ -661,8 +698,14 @@ mx.__.extractSymbols = function(symbol1, symbol2) {
 };
 
 // setup mx helper function:
-window.$$ = function (d) {
+mx.$$ = function (d) {
 	if (d.__class) return d;
 	if (isNaN(d)) return mx.scalar(d);
 	return mx.constant(d);
 };
+
+try {
+	window.$$ = mx.$$;
+} catch (err) {
+	// running in node
+}
