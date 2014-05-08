@@ -476,6 +476,10 @@ mx.pow = function(symbolBase, symbolPower) {
 		return symbolBase;
 	}
 
+	if (symbolPower.value() !== null && symbolPower.value() === 0) {
+		return $$(1);
+	}
+
 	if (symbolBase.value() !== null) {
 		return mx.constant(Math.pow(symbolBase.value(), symbolPower.value()));
 	}

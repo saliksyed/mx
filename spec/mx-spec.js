@@ -253,24 +253,29 @@ describe('mx.tan', function() {
 describe('mx.pow', function() {
 	
 	it('should return 1 if the power is 0', function() {
-
+		expect(mx.pow($$('x'),$$(0)).value()).toBe(1);
 	});
 
 	it('should return the same expression if power is 1', function() {
-
+		expect(mx.pow($$('x'),$$(1)).value({'x' : 88})).toBe(88);
 	});
 
 
 	it('should return a number if base is constant', function() {
-
+		expect(mx.pow($$(3),$$(3)).value()).toBe(27);
+		expect(mx.pow($$(3),$$(3)).className()).toBe('mx.constant');
 	});
 
 	it('should fail if the exponent is not a number', function() {
+		var test = function() {
+			return mx.pow($$(3), $$('x'));
+		};
 
+		expect(test).toThrow();
 	});
 
 	it('should give the correct derivative for x^3', function() {
-
+		expect(mx.equal($$(3).times($$('x').pow(2)), $$('x').pow(3).derivative('x'))).toBe(true);
 	});
 });
 
