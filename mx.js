@@ -1,11 +1,13 @@
 
 var mx;
-
+var root;
 try {
 	// try to set mx to exports if running as node module
 	mx = exports;
+	root = global;
 } catch(err) {
 	mx = {};
+	root = window;
 }
 
 
@@ -801,6 +803,14 @@ mx.$$ = function (d) {
 };
 
 mx.nice = function() {
+	try {
+		root.cos = mx.cos;
+		root.exp = mx.exp;
+		root.sin = mx.sin;
+		root.tan = mx.tan;
+		root.pow = mx.pow;
+		root.ln = mx.ln;
+	} catch (err) {}
 
 	// Syntactic sugar methods
 	Number.prototype.times = function(s) {
@@ -855,8 +865,4 @@ mx.nice = function() {
 
 };
 
-try {
-	window.$$ = mx.$$;
-} catch (err) {
-	// running in node
-}
+root.$$ = mx.$$;

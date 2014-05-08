@@ -1,5 +1,5 @@
 var mx = require("../mx.js");
-global.$$ = mx.$$;
+
 
 describe('mx.symbol', function() {
 	it('should return mx.symbol as classname', function() {
