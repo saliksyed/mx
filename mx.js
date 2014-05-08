@@ -363,6 +363,11 @@ mx.subtract = function(symbol1, symbol2) {
 
 
 mx.sin = function(symbol) {
+	// simplify if evaluatable
+	if (symbol.value() !== null) {
+		return $$(Math.sin(symbol.value()));
+	}
+
 	var that = mx.symbol();
 
 	that.__class = "mx.sin";
@@ -406,6 +411,11 @@ mx.sin = function(symbol) {
 
 
 mx.cos = function(symbol) {
+	// simplify if evaluatable
+	if (symbol.value() !== null) {
+		return $$(Math.cos(symbol.value()));
+	}
+
 	var that = mx.symbol();
 
 	that.__class = "mx.cos";

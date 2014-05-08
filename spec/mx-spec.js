@@ -236,6 +236,28 @@ describe('mx.subtract', function() {
 // TODO: mx.exp
 // TODO: mx.__.estimateDerivative 
 
+describe('mx.sin', function() {
+	it('should simplify correctly constants', function() {
+		expect(mx.sin($$(0)).value()).toEqual(0);
+		expect(mx.sin($$(Math.PI/2)).value()).toEqual(1);
+	});
+
+	it('should compute the correct derivative for sin(2x)', function() {
+		expect(mx.sin($$(2).times('x')).derivative('x').value({'x' : 0})).toEqual(2);
+	});
+});
+
+describe('mx.cos', function() {
+	it('should simplify correctly constants', function() {
+		expect(Math.abs(mx.cos($$(Math.PI/2)).value()) < mx.__.EPSILON).toBe(true);
+		expect(mx.cos($$(0)).value()).toEqual(1);
+	});
+
+	it('should compute the correct derivative for cos(2x)', function() {
+		expect(mx.cos($$(2).times('x')).derivative('x').value({'x' : Math.PI/2})).toEqual(-2);
+	});
+});
+
 describe('equal', function() {
 	it('should compute equal correctly', function() {
 		expect(mx.equal($$('x').times(2), $$('x').plus('x'))).toBe(true);
