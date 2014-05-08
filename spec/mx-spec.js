@@ -445,5 +445,14 @@ describe('simple derivatives', function() {
 		expect(mx.equal(derivative, $$(estimator), 0.1)).toBe(true);
 	});
 
+	it('should work for tan(cos(x))^-3', function() {
+		var exp = mx.pow(mx.tan(mx.cos('x')),-3);
+		var derivative = exp.derivative('x');
+
+		var estimator = function (valueMap) {
+			return mx.__.estimateDerivative(exp, $$('x'), valueMap, 0.00001);
+		};
+		expect(mx.equal(derivative, $$(estimator), 0.1)).toBe(true);
+	});
 
 });

@@ -800,6 +800,61 @@ mx.$$ = function (d) {
 	return mx.constant(d);
 };
 
+mx.nice = function() {
+
+	// Syntactic sugar methods
+	Number.prototype.times = function(s) {
+		return mx.multiply($$(this), $$(s));
+	};
+
+	Number.prototype.plus = function(s) {
+		return mx.add($$(this), $$(s));
+	};
+
+	Number.prototype.pow = function(s) {
+		return mx.pow($$(this), $$(s));
+	};
+
+	Number.prototype.dividedBy = function(s) {
+		return mx.divide($$(this), $$(s));
+	};
+
+
+	Number.prototype.minus = function(s) {
+		return mx.subtract($$(this), $$(s));
+	};
+
+	Number.prototype.derivative = function(s) {
+		return $$(this).differentiate($$(s));
+	};
+
+	String.prototype.times = function(s) {
+		return mx.multiply($$(this), $$(s));
+	};
+
+	String.prototype.plus = function(s) {
+		return mx.add($$(this), $$(s));
+	};
+
+	String.prototype.pow = function(s) {
+		return mx.pow($$(this), $$(s));
+	};
+
+	String.prototype.dividedBy = function(s) {
+		return mx.divide($$(this), $$(s));
+	};
+
+
+	String.prototype.minus = function(s) {
+		return mx.subtract($$(this), $$(s));
+	};
+
+	String.prototype.derivative = function(s) {
+		return $$(this).differentiate($$(s));
+	};
+
+};
+
 try {
 	window.$$ = mx.$$;
 } catch (err) {
