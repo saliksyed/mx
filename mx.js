@@ -242,6 +242,8 @@ mx.scalar = function(name) {
 mx.matrix = function(dim1, dim2) {
 	var that = mx.symbol();
 
+	if (isNaN(dim1) || isNaN(dim2)) throw 'Invalid input dimensions';
+
 	that.__class = 'mx.matrix';
 
 	that.values = {};
@@ -255,6 +257,20 @@ mx.matrix = function(dim1, dim2) {
 
 	that.isVector = function() {
 		return that.rows === 1 || that.cols ===1;
+	};
+
+	that.setRow = function(row, vec) {
+		if (vec.cols !== that.cols || vec.rows !== 1) throw 'Invalid row vector';
+		for (var i = 0; i < that.cols; i++) {
+			that.set(row, i, vec.get(i, 0));
+		}
+	};
+
+	that.setCol = function(col, vec) {
+		if (vec.rows !== that.rows || vec.cols !== 1) throw 'Invalid column vector';
+		for (var i = 0; i < that.rows; i++) {
+			that.set(i, col, vec.get(0, i));
+		}
 	};
 
 	that.set = function(row, col, val) {
@@ -274,6 +290,26 @@ mx.matrix = function(dim1, dim2) {
 				mapperFn(that.get(i,j), i, j);
 			}
 		}
+	};
+
+	that.transpose = function() {
+		var newmat = mx.matrix(that.cols,that.rows);
+		var i;
+		if (that.cols === 1) {
+			for (i = 0; i < that.cols; i++) {
+				newmat.set(i, 0, that.get(0, i));
+			}
+		} else if(that.rows === 1) {
+			for (i = 0; i < that.cols; i++) {
+				newmat.set(0, i, that.get(i, 0));
+			}
+		} else {
+			for (i = 0; i < that.cols; i++) {
+				newmat.setRow(that.column(i).transpose());
+			}
+		}
+
+		return newmat;
 	};
 
 	that.multiplyElems = function(mat2) {
@@ -305,7 +341,7 @@ mx.matrix = function(dim1, dim2) {
 	};
 
 	that.dot = function(mat2) {
-		if (!that.isVector() || !mat2.isVector) throw 'Can only run dot product on vector';
+		if (!that.isVector() || !mat2.isVector()) throw 'Can only run dot product on vector';
 		if (that.rows !== mat2.rows || that.cols !==mat2.cols) throw 'Incompatible matrix sizes';
 
 		var i;
@@ -323,8 +359,24 @@ mx.matrix = function(dim1, dim2) {
 	};
 
 	that.multiply = function(mat2) {
+		if (mat2.className() === 'mx.scalar' || mat2.className() ==='mx.constant') {
+			// just multiply all elements by mat2:
+			var newmat = mx.matrix(that.rows, that.cols);
+			that.map(function(d,i,j) {
+				newmat.set(i,j, d.times(mat2));
+			});
+			return newmat;
+		}
 
+		if (mat2.isVector()){
+			// transform vector by matrix
+		}
+
+		if (mat2.cols !== that.rows || mat2.rows !== that.cols) throw 'Invalid matrix multiplication';
+		// do matrix multiply:
 	};
+
+	return that;
 };
 
 
@@ -347,7 +399,7 @@ mx.multiply = function(symbol1, symbol2) {
 	}
 	
 	if(symbol2.value() !== null && symbol1.value() !== null) {
-		return mx.constant(symbol2.value() * symbol.value());
+		return mx.constant(symbol2.value() * symbol1.value());
 	}
 
 	if(!symbol1 || !symbol2) {

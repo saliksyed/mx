@@ -77,6 +77,58 @@ describe('mx.scalar', function() {
 	});
 });
 
+
+
+describe('mx.matrix', function() {
+	it('should return mx.matrix as classname', function() {
+		expect(mx.matrix(1,1).className()).toBe('mx.matrix');
+	});
+
+	it('require valid dimensions', function() {
+		var test = function() {
+			return mx.matrix();
+		};
+		expect(test).toThrow();
+	});
+
+	it('should return enable you to set and get a value', function() {
+		var mat = mx.matrix(1,1);
+		mat.set(0, 0, $$(5));
+		expect(mat.get(0, 0).value()).toBe(5);
+	});
+
+	// DOT products:
+	
+	it('should compute the right dot product', function() {
+		var mat = mx.matrix(3,1);
+		mat.set(0, 0, $$(1));
+		mat.set(1, 0, $$(2));
+		mat.set(2, 0, $$(3));
+		expect(mat.dot(mat).value()).toBe(14);
+	});
+
+	it('should not enable dot products on non vectors', function() {
+		var mat = mx.matrix(3,3);
+		var test = function() {
+			return mat.dot(mat);
+		};
+
+		expect(test).toThrow();
+	});
+
+	it('should compute the right dot product for symbols', function() {
+		var mat = mx.matrix(3,1);
+		mat.set(0, 0, $$('x'));
+		mat.set(1, 0, $$('x').times(2));
+		mat.set(2, 0, $$('x').times(3));
+		expect(mat.dot(mat).value({'x' : 1})).toBe(14);
+		expect(mat.dot(mat).value({'x' : 2})).toBe(56);
+	});
+
+
+});
+
+
 describe('$$', function() {
 	it('should correctly coerce a string input to a mx.scalar', function() {
 		expect($$('x').className()).toBe('mx.scalar');
