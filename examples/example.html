@@ -11,7 +11,8 @@
         cos('x').times(sin('x'.times('y')))
         .derivative('x')
         .times('y')
-        .pow(-1);
+        .pow(-1)
+        .derivative('y');
 
         console.log('x'.times('y').getSymbols());
 

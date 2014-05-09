@@ -313,7 +313,7 @@ mx.matrix = function(dim1, dim2) {
 	};
 
 	that.multiplyElems = function(mat2) {
-		if(mat2.rows !== that.rows || mat2.cols !== that.cols) throw 'Incompatible matrix sizes';
+		if(mat2.rows !== that.rows || mat2.cols !== that.cols) throw 'Incompatible matrix sizes : (' + that.rows +"," + that.cols +') vs. ('+mat2.rows+','+mat2.cols+')';
 
 		var newmat = mx.matrix(that.rows, that.cols);
 

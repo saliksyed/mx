@@ -125,6 +125,14 @@ describe('mx.matrix', function() {
 		expect(mat.dot(mat).value({'x' : 2})).toBe(56);
 	});
 
+	// isVector
+	it('should be able to determine if it is a vector', function() {
+		expect(mx.matrix(3,1).isVector()).toBe(true);
+		expect(mx.matrix(1,3).isVector()).toBe(true);
+		expect(mx.matrix(3,3).isVector()).toBe(false);
+	});
+
+	
 
 });
 
