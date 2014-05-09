@@ -11,8 +11,12 @@ try {
 }
 
 
-// GOAL 1: get it working on simple non matrix expressions
-// GOAL 2: get it working on matrix expressions
+// Private functions
+mx.__ = {};
+mx.__.EPSILON = 1e-10;
+mx.__.EQUALITY_CHECK_SAMPLES = 100;
+mx.__.EQUALITY_CHECK_RANGE = 999999;
+
 
 mx.symbol = function() {
 	var that = {};
@@ -232,6 +236,97 @@ mx.scalar = function(name) {
 
 	return that;
 };
+
+
+
+mx.matrix = function(dim1, dim2) {
+	var that = mx.symbol();
+
+	that.__class = 'mx.matrix';
+
+	that.values = {};
+	that.rows = dim1;
+	that.cols = dim2;
+
+	var checkBounds = function(row, col){
+		if (row >= that.rows) throw 'Index out of bounds';
+		if (col >= that.cols) throw 'Index out of bounds';
+	};
+
+	that.isVector = function() {
+		return that.rows === 1 || that.cols ===1;
+	};
+
+	that.set = function(row, col, val) {
+		checkBounds(row,col);
+		that.values[row+'_'+col] = val;
+	};
+
+	that.get = function(row, col) {
+		checkBounds(row,col);
+		// TODO: create deep copy!
+		return that.values[row+'_'+col];
+	};
+
+	that.map = function(mapperFn) {
+		for (var i = 0; i < that.rows; i++) {
+			for(var j = 0; j <that.cols; j++) {
+				mapperFn(that.get(i,j), i, j);
+			}
+		}
+	};
+
+	that.multiplyElems = function(mat2) {
+		if(mat2.rows !== that.rows || mat2.cols !== that.cols) throw 'Incompatible matrix sizes';
+
+		var newmat = mx.matrix(that.rows, that.cols);
+
+		that.map(function(d,i,j) {
+			newmat.set(i,j, d.times(mat2.get(i,j)));
+		});
+	};
+
+	that.row = function(row) {
+		checkBounds(row,0);
+		var ret = mx.matrix(that.cols, 1);
+		for (var i = 0; i < that.cols; i++) {
+			ret.set(that.get(row, i));
+		}
+		return ret;
+	};
+
+	that.column = function(col) {
+		var ret = mx.matrix(1, that.rows);
+		checkBounds(0, col);
+		for (var i = 0; i < that.rows; i++) {
+			ret.set(that.get(i, col));
+		}
+		return ret;
+	};
+
+	that.dot = function(mat2) {
+		if (!that.isVector() || !mat2.isVector) throw 'Can only run dot product on vector';
+		if (that.rows !== mat2.rows || that.cols !==mat2.cols) throw 'Incompatible matrix sizes';
+
+		var i;
+		var ret = mx.constant(0);
+		if (that.rows === 1) {
+			for (i = 0; i < that.cols; i ++) {
+				ret = ret.plus(that.get(0, i).times(mat2.get(0,i)));
+			}
+		} else {
+			for (i = 0; i < that.rows; i ++) {
+				ret = ret.plus(that.get(i, 0).times(mat2.get(i, 0)));
+			}
+		}
+		return ret;
+	};
+
+	that.multiply = function(mat2) {
+
+	};
+};
+
 
 mx.multiply = function(symbol1, symbol2) {
 
@@ -694,12 +789,6 @@ mx.equal = function(symbol1, symbol2, eps, numSamplePoints, rangeMin, rangeMax) 
 	}
 	return true;
 };
-
-// Private functions
-mx.__ = {};
-mx.__.EPSILON = 1e-10;
-mx.__.EQUALITY_CHECK_SAMPLES = 100;
-mx.__.EQUALITY_CHECK_RANGE = 999999;
 
 /**
  * Uses finite difference to approximate derivatives
