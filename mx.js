@@ -324,19 +324,28 @@ mx.matrix = function(dim1, dim2) {
 
 	that.row = function(row) {
 		checkBounds(row,0);
-		var ret = mx.matrix(that.cols, 1);
+		var ret = mx.matrix(1, that.cols);
 		for (var i = 0; i < that.cols; i++) {
-			ret.set(that.get(row, i));
+			ret.set(0, i, that.get(row, i));
 		}
 		return ret;
 	};
 
 	that.column = function(col) {
-		var ret = mx.matrix(1, that.rows);
+		var ret = mx.matrix(that.rows, 1);
 		checkBounds(0, col);
 		for (var i = 0; i < that.rows; i++) {
-			ret.set(that.get(i, col));
+			ret.set(i, 0, that.get(i, col));
 		}
+
+		return ret;
+	};
+
+	that.fill = function(val) {
+		var ret = mx.matrix(that.rows, that.cols);
+		that.map(function(d, i, j) {
+			ret.set(i, j, $$(val));
+		});
 		return ret;
 	};
 
@@ -346,6 +355,7 @@ mx.matrix = function(dim1, dim2) {
 
 		var i;
 		var ret = mx.constant(0);
+
 		if (that.rows === 1) {
 			for (i = 0; i < that.cols; i ++) {
 				ret = ret.plus(that.get(0, i).times(mat2.get(0,i)));
@@ -359,10 +369,12 @@ mx.matrix = function(dim1, dim2) {
 	};
 
 	that.multiply = function(mat2) {
+		var newmat, i;
 		if (mat2.className() === 'mx.scalar' || mat2.className() ==='mx.constant') {
 			// just multiply all elements by mat2:
-			var newmat = mx.matrix(that.rows, that.cols);
+			newmat = mx.matrix(that.rows, that.cols);
 			that.map(function(d,i,j) {
+				if (!d) return;
 				newmat.set(i,j, d.times(mat2));
 			});
 			return newmat;
@@ -370,10 +382,23 @@ mx.matrix = function(dim1, dim2) {
 
 		if (mat2.isVector()){
 			// transform vector by matrix
+			if (mat2.rows !== that.cols) throw 'Cannot transform vector of dimension ' + mat2.rows + ' by matrix of dimension (' + that.rows + ','+that.cols+')';
+
+			newmat = mx.matrix(mat2.rows, 1);
+			for (i = 0; i < that.cols; i++) {
+				newmat.set(i, 0, that.column(i).dot(mat2));
+			}
+			return newmat;
 		}
 
 		if (mat2.cols !== that.rows || mat2.rows !== that.cols) throw 'Invalid matrix multiplication';
 		// do matrix multiply:
+		newmat = mx.matrix(that.rows, mat2.cols);
+		for (i = 0; i < mat2.cols; i ++){
+			for (var j = 0; j < that.rows; j++) {
+				newmat.set(i, j, that.row(j).dot(mat2.column(i)));
+			}
+		}
 	};
 
 	return that;

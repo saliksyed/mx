@@ -132,7 +132,26 @@ describe('mx.matrix', function() {
 		expect(mx.matrix(3,3).isVector()).toBe(false);
 	});
 
-	
+	// fill
+	it('should be able to fill a matrix with numbers', function() {
+		var mat = mx.matrix(2,2).fill(3);
+		expect(mat.get(0,0).value()).toBe(3);
+		expect(mat.get(0,1).value()).toBe(3);
+		expect(mat.get(1,0).value()).toBe(3);
+		expect(mat.get(1,1).value()).toBe(3);
+	});
+
+	// multiply
+	it('should be able to transform a vector by a matrix:', function() {
+		var vec = mx.matrix(2,1).fill(1);
+		var mat = mx.matrix(2,2).fill(1);
+		
+		var transformed = mat.multiply(vec);
+		//expect(transformed.get(0,0).value()).toBe(2);
+		//expect(transformed.get(1,0).value()).toBe(2);
+		
+	});
+
 
 });
 

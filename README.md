@@ -40,13 +40,20 @@ console.log(d.toString());
 * `mx.sin('x')` : sin(x)
 * `mx.tan('x')` : tan(x)
 
-### Background
+### Background & Philosophy
 I started Math-X out of frustrations from doing complex derivatives by hand when
-attempting to implement machine learning code. The long-term vision for MX is to pair the 
-simple in-browser symbolic differentiation and integration tools with a WebGL or Cuda backed execution
-engine to enable fast implementations of mathematical code on the web.
+attempting to implement machine learning code. 
 
-Currently this initial version library only supports scalar expressions but the next release
+Math-X functions are written with the goal of clarity rather than efficiency.
+This is because the primary purpose of the library is analytical rather than computational (if you
+are looking for a library to do fast vector math and operations then this is the wrong tool).
+
+Math-X is aimed at computing symbolic expressions for derivatives and integrals over high dimensional vectors and matrices.
+Once the correct mathematical expressions have been formulated within Math-X they should be used as a starting point to generate performance optimized code for actual evaluation.
+
+The long-term vision for MX is to pair the  simple in-browser symbolic differentiation and integration tools with a GPU backed execution engine to enable fast implementations of mathematical code on the web.
+
+Currently the initial library only supports scalar expressions but the next release
 should add support for vector and matrix based operations and support for symbolic integration.
 
 ### Running Tests
