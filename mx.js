@@ -296,12 +296,12 @@ mx.matrix = function(dim1, dim2) {
 		var newmat = mx.matrix(that.cols,that.rows);
 		var i;
 		if (that.cols === 1) {
-			for (i = 0; i < that.cols; i++) {
-				newmat.set(i, 0, that.get(0, i));
+			for (i = 0; i < that.rows; i++) {
+				newmat.set(0, i, that.get(i, 0));
 			}
 		} else if(that.rows === 1) {
 			for (i = 0; i < that.cols; i++) {
-				newmat.set(0, i, that.get(i, 0));
+				newmat.set(i, 0, that.get(0, i));
 			}
 		} else {
 			for (i = 0; i < that.cols; i++) {
@@ -351,7 +351,10 @@ mx.matrix = function(dim1, dim2) {
 
 	that.dot = function(mat2) {
 		if (!that.isVector() || !mat2.isVector()) throw 'Can only run dot product on vector';
-		if (that.rows !== mat2.rows || that.cols !==mat2.cols) throw 'Incompatible matrix sizes';
+
+		if (that.rows !== mat2.rows) {
+			mat2 = mat2.transpose();
+		}
 
 		var i;
 		var ret = mx.constant(0);
@@ -399,6 +402,7 @@ mx.matrix = function(dim1, dim2) {
 				newmat.set(i, j, that.row(j).dot(mat2.column(i)));
 			}
 		}
+		return newmat;
 	};
 
 	return that;
