@@ -160,8 +160,31 @@ describe('mx.matrix', function() {
 		expect(transformed.get(1,0).value()).toBe(2);
 		expect(transformed.get(1,1).value()).toBe(2);
 		expect(transformed.get(0,1).value()).toBe(2);
-
 	});
+
+	it('Identity transforms should work', function() {
+		var vec = mx.matrix(3,1).fill(1);
+		var mat = mx.matrix(3,3).fill(0);
+
+		mat.set(0,0,$$(1));
+		mat.set(1,1,$$(1));
+		mat.set(2,2,$$(1));
+		
+		var transformed = mat.multiply(vec);
+		expect(transformed.get(0,0).value()).toBe(1);
+		expect(transformed.get(1,0).value()).toBe(1);
+		expect(transformed.get(2,0).value()).toBe(1);
+	});
+
+	it('scalar multiplications should work', function() {
+		var vec = mx.matrix(3,3).fill(1);
+		var transformed = vec.multiply($$(2));
+		expect(transformed.get(0,0).value()).toBe(2);
+		expect(transformed.get(1,1).value()).toBe(2);
+		expect(transformed.get(2,1).value()).toBe(2);
+	});
+
+	// transpose
 });
 
 

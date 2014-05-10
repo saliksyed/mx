@@ -1,4 +1,4 @@
-
+/*jshint multistr: true */
 var mx;
 var root;
 try {
@@ -264,6 +264,7 @@ mx.matrix = function(dim1, dim2) {
 		for (var i = 0; i < that.cols; i++) {
 			that.set(row, i, vec.get(i, 0));
 		}
+		return that;
 	};
 
 	that.setCol = function(col, vec) {
@@ -271,16 +272,19 @@ mx.matrix = function(dim1, dim2) {
 		for (var i = 0; i < that.rows; i++) {
 			that.set(i, col, vec.get(0, i));
 		}
+		return that;
 	};
 
 	that.set = function(row, col, val) {
 		checkBounds(row,col);
 		that.values[row+'_'+col] = val;
+		return that;
 	};
 
 	that.get = function(row, col) {
 		checkBounds(row,col);
 		// TODO: create deep copy!
+		if (!that.values[row+'_'+col]) return $$(0);
 		return that.values[row+'_'+col];
 	};
 
@@ -290,6 +294,7 @@ mx.matrix = function(dim1, dim2) {
 				mapperFn(that.get(i,j), i, j);
 			}
 		}
+		return that;
 	};
 
 	that.transpose = function() {
@@ -403,6 +408,20 @@ mx.matrix = function(dim1, dim2) {
 			}
 		}
 		return newmat;
+	};
+
+	that.toString = function() {
+		var ret = "[\n";
+
+		for (var i = 0 ; i < that.rows; i++) {
+			ret +="\t";
+			for (var j = 0; j < that.cols; j++) {
+				ret+=that.get(i, j).toString() +",";
+			}
+			ret += "\n";
+		}
+		ret +="]";
+		return ret;
 	};
 
 	return that;
