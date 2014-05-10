@@ -303,6 +303,16 @@ describe('mx.add', function() {
 	});
 });
 
+describe('apply', function() {
+	it('should correctly replace a symbol', function() {
+		var exp = $$('a').plus(5).times('a');
+		var replaced = exp.apply('a', $$('x').plus('y'));
+		expect(replaced.value({'x' : 1})).toBe(null);
+		expect(replaced.value({'y' : 1})).toBe(null);
+		expect(replaced.value({'x' : 1, 'y' : 1})).toBe(14);
+	});
+});
+
 
 describe('mx.subtract', function() {
 

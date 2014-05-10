@@ -89,6 +89,28 @@ mx.symbol = function() {
 		return ret;
 	};
 
+	that.copy = function() {
+		return JSON.parse(JSON.stringify(that));
+	};
+	
+	/**
+	 * Modifies a symbol by replacing every instance with 
+	 * @param  {[type]} mapping [description]
+	 * @return {[type]}         [description]
+	 */
+	that.apply = function(name, value) {
+		var ret = that;
+		var properties = Object.keys(ret.args);
+		for (var i = 0; i < properties.length; i++) {
+			if (ret.args[properties[i]].className() === 'mx.scalar' && ret.args[properties[i]].name() === name) {
+				ret.args[properties[i]] = value;
+			} else {
+				ret.args[properties[i]].apply(name, value);
+			}
+		}
+		return ret;
+	};
+
 	// Syntactic sugar methods
 	that.times = function(s) {
 		return mx.multiply(that, $$(s));
@@ -246,7 +268,7 @@ mx.matrix = function(dim1, dim2) {
 
 	that.__class = 'mx.matrix';
 
-	that.values = {};
+	that.args.values = {};
 	that.rows = dim1;
 	that.cols = dim2;
 
@@ -277,15 +299,15 @@ mx.matrix = function(dim1, dim2) {
 
 	that.set = function(row, col, val) {
 		checkBounds(row,col);
-		that.values[row+'_'+col] = val;
+		that.args.values[row+'_'+col] = val;
 		return that;
 	};
 
 	that.get = function(row, col) {
 		checkBounds(row,col);
 		// TODO: create deep copy!
-		if (!that.values[row+'_'+col]) return $$(0);
-		return that.values[row+'_'+col];
+		if (!that.args.values[row+'_'+col]) return $$(0);
+		return that.args.values[row+'_'+col];
 	};
 
 	that.map = function(mapperFn) {
