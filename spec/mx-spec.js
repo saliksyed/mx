@@ -77,6 +77,117 @@ describe('mx.scalar', function() {
 	});
 });
 
+
+
+describe('mx.matrix', function() {
+	it('should return mx.matrix as classname', function() {
+		expect(mx.matrix(1,1).className()).toBe('mx.matrix');
+	});
+
+	it('require valid dimensions', function() {
+		var test = function() {
+			return mx.matrix();
+		};
+		expect(test).toThrow();
+	});
+
+	it('should return enable you to set and get a value', function() {
+		var mat = mx.matrix(1,1);
+		mat.set(0, 0, $$(5));
+		expect(mat.get(0, 0).value()).toBe(5);
+	});
+
+	// DOT products:
+	
+	it('should compute the right dot product', function() {
+		var mat = mx.matrix(3,1);
+		mat.set(0, 0, $$(1));
+		mat.set(1, 0, $$(2));
+		mat.set(2, 0, $$(3));
+		expect(mat.dot(mat).value()).toBe(14);
+	});
+
+	it('should not enable dot products on non vectors', function() {
+		var mat = mx.matrix(3,3);
+		var test = function() {
+			return mat.dot(mat);
+		};
+
+		expect(test).toThrow();
+	});
+
+	it('should compute the right dot product for symbols', function() {
+		var mat = mx.matrix(3,1);
+		mat.set(0, 0, $$('x'));
+		mat.set(1, 0, $$('x').times(2));
+		mat.set(2, 0, $$('x').times(3));
+		expect(mat.dot(mat).value({'x' : 1})).toBe(14);
+		expect(mat.dot(mat).value({'x' : 2})).toBe(56);
+	});
+
+	// isVector
+	it('should be able to determine if it is a vector', function() {
+		expect(mx.matrix(3,1).isVector()).toBe(true);
+		expect(mx.matrix(1,3).isVector()).toBe(true);
+		expect(mx.matrix(3,3).isVector()).toBe(false);
+	});
+
+	// fill
+	it('should be able to fill a matrix with numbers', function() {
+		var mat = mx.matrix(2,2).fill(3);
+		expect(mat.get(0,0).value()).toBe(3);
+		expect(mat.get(0,1).value()).toBe(3);
+		expect(mat.get(1,0).value()).toBe(3);
+		expect(mat.get(1,1).value()).toBe(3);
+	});
+
+	// multiply
+	it('should be able to transform a vector by a matrix:', function() {
+		var vec = mx.matrix(2,1).fill(1);
+		var mat = mx.matrix(2,2).fill(1);
+		
+		var transformed = mat.multiply(vec);
+		expect(transformed.get(0,0).value()).toBe(2);
+		expect(transformed.get(1,0).value()).toBe(2);
+	});
+
+	it('should be able to transform a matrix by a matrix:', function() {
+		var vec = mx.matrix(2,2).fill(1);
+		var mat = mx.matrix(2,2).fill(1);
+		
+		var transformed = mat.multiply(vec);
+		expect(transformed.get(0,0).value()).toBe(2);
+		expect(transformed.get(1,0).value()).toBe(2);
+		expect(transformed.get(1,1).value()).toBe(2);
+		expect(transformed.get(0,1).value()).toBe(2);
+	});
+
+	it('Identity transforms should work', function() {
+		var vec = mx.matrix(3,1).fill(1);
+		var mat = mx.matrix(3,3).fill(0);
+
+		mat.set(0,0,$$(1));
+		mat.set(1,1,$$(1));
+		mat.set(2,2,$$(1));
+		
+		var transformed = mat.multiply(vec);
+		expect(transformed.get(0,0).value()).toBe(1);
+		expect(transformed.get(1,0).value()).toBe(1);
+		expect(transformed.get(2,0).value()).toBe(1);
+	});
+
+	it('scalar multiplications should work', function() {
+		var vec = mx.matrix(3,3).fill(1);
+		var transformed = vec.multiply($$(2));
+		expect(transformed.get(0,0).value()).toBe(2);
+		expect(transformed.get(1,1).value()).toBe(2);
+		expect(transformed.get(2,1).value()).toBe(2);
+	});
+
+	// transpose
+});
+
+
 describe('$$', function() {
 	it('should correctly coerce a string input to a mx.scalar', function() {
 		expect($$('x').className()).toBe('mx.scalar');
@@ -189,6 +300,16 @@ describe('mx.add', function() {
 		var d_dx_xplusx= xplusx.differentiate(x);
 
 		expect(d_dx_xplusx.value()).toBe(2);
+	});
+});
+
+describe('apply', function() {
+	it('should correctly replace a symbol', function() {
+		var exp = $$('a').plus(5).times('a');
+		var replaced = exp.apply('a', $$('x').plus('y'));
+		expect(replaced.value({'x' : 1})).toBe(null);
+		expect(replaced.value({'y' : 1})).toBe(null);
+		expect(replaced.value({'x' : 1, 'y' : 1})).toBe(14);
 	});
 });
 

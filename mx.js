@@ -1,4 +1,4 @@
-
+/*jshint multistr: true */
 var mx;
 var root;
 try {
@@ -11,8 +11,12 @@ try {
 }
 
 
-// GOAL 1: get it working on simple non matrix expressions
-// GOAL 2: get it working on matrix expressions
+// Private functions
+mx.__ = {};
+mx.__.EPSILON = 1e-10;
+mx.__.EQUALITY_CHECK_SAMPLES = 100;
+mx.__.EQUALITY_CHECK_RANGE = 999999;
+
 
 mx.symbol = function() {
 	var that = {};
@@ -80,6 +84,28 @@ mx.symbol = function() {
 					ret.push(list[j]);
 					ret = ret.concat(list[j].getSymbols(seen));
 				}
+			}
+		}
+		return ret;
+	};
+
+	that.copy = function() {
+		return JSON.parse(JSON.stringify(that));
+	};
+	
+	/**
+	 * Modifies a symbol by replacing every instance with 
+	 * @param  {[type]} mapping [description]
+	 * @return {[type]}         [description]
+	 */
+	that.apply = function(name, value) {
+		var ret = that;
+		var properties = Object.keys(ret.args);
+		for (var i = 0; i < properties.length; i++) {
+			if (ret.args[properties[i]].className() === 'mx.scalar' && ret.args[properties[i]].name() === name) {
+				ret.args[properties[i]] = value;
+			} else {
+				ret.args[properties[i]].apply(name, value);
 			}
 		}
 		return ret;
@@ -233,6 +259,197 @@ mx.scalar = function(name) {
 	return that;
 };
 
+
+
+mx.matrix = function(dim1, dim2) {
+	var that = mx.symbol();
+
+	if (isNaN(dim1) || isNaN(dim2)) throw 'Invalid input dimensions';
+
+	that.__class = 'mx.matrix';
+
+	that.args.values = {};
+	that.rows = dim1;
+	that.cols = dim2;
+
+	var checkBounds = function(row, col){
+		if (row >= that.rows) throw 'Index out of bounds';
+		if (col >= that.cols) throw 'Index out of bounds';
+	};
+
+	that.isVector = function() {
+		return that.rows === 1 || that.cols ===1;
+	};
+
+	that.setRow = function(row, vec) {
+		if (vec.cols !== that.cols || vec.rows !== 1) throw 'Invalid row vector';
+		for (var i = 0; i < that.cols; i++) {
+			that.set(row, i, vec.get(i, 0));
+		}
+		return that;
+	};
+
+	that.setCol = function(col, vec) {
+		if (vec.rows !== that.rows || vec.cols !== 1) throw 'Invalid column vector';
+		for (var i = 0; i < that.rows; i++) {
+			that.set(i, col, vec.get(0, i));
+		}
+		return that;
+	};
+
+	that.set = function(row, col, val) {
+		checkBounds(row,col);
+		that.args.values[row+'_'+col] = val;
+		return that;
+	};
+
+	that.get = function(row, col) {
+		checkBounds(row,col);
+		// TODO: create deep copy!
+		if (!that.args.values[row+'_'+col]) return $$(0);
+		return that.args.values[row+'_'+col];
+	};
+
+	that.map = function(mapperFn) {
+		for (var i = 0; i < that.rows; i++) {
+			for(var j = 0; j <that.cols; j++) {
+				mapperFn(that.get(i,j), i, j);
+			}
+		}
+		return that;
+	};
+
+	that.transpose = function() {
+		var newmat = mx.matrix(that.cols,that.rows);
+		var i;
+		if (that.cols === 1) {
+			for (i = 0; i < that.rows; i++) {
+				newmat.set(0, i, that.get(i, 0));
+			}
+		} else if(that.rows === 1) {
+			for (i = 0; i < that.cols; i++) {
+				newmat.set(i, 0, that.get(0, i));
+			}
+		} else {
+			for (i = 0; i < that.cols; i++) {
+				newmat.setRow(that.column(i).transpose());
+			}
+		}
+
+		return newmat;
+	};
+
+	that.multiplyElems = function(mat2) {
+		if(mat2.rows !== that.rows || mat2.cols !== that.cols) throw 'Incompatible matrix sizes : (' + that.rows +"," + that.cols +') vs. ('+mat2.rows+','+mat2.cols+')';
+
+		var newmat = mx.matrix(that.rows, that.cols);
+
+		that.map(function(d,i,j) {
+			newmat.set(i,j, d.times(mat2.get(i,j)));
+		});
+	};
+
+	that.row = function(row) {
+		checkBounds(row,0);
+		var ret = mx.matrix(1, that.cols);
+		for (var i = 0; i < that.cols; i++) {
+			ret.set(0, i, that.get(row, i));
+		}
+		return ret;
+	};
+
+	that.column = function(col) {
+		var ret = mx.matrix(that.rows, 1);
+		checkBounds(0, col);
+		for (var i = 0; i < that.rows; i++) {
+			ret.set(i, 0, that.get(i, col));
+		}
+
+		return ret;
+	};
+
+	that.fill = function(val) {
+		var ret = mx.matrix(that.rows, that.cols);
+		that.map(function(d, i, j) {
+			ret.set(i, j, $$(val));
+		});
+		return ret;
+	};
+
+	that.dot = function(mat2) {
+		if (!that.isVector() || !mat2.isVector()) throw 'Can only run dot product on vector';
+
+		if (that.rows !== mat2.rows) {
+			mat2 = mat2.transpose();
+		}
+
+		var i;
+		var ret = mx.constant(0);
+
+		if (that.rows === 1) {
+			for (i = 0; i < that.cols; i ++) {
+				ret = ret.plus(that.get(0, i).times(mat2.get(0,i)));
+			}
+		} else {
+			for (i = 0; i < that.rows; i ++) {
+				ret = ret.plus(that.get(i, 0).times(mat2.get(i, 0)));
+			}
+		}
+		return ret;
+	};
+
+	that.multiply = function(mat2) {
+		var newmat, i;
+		if (mat2.className() === 'mx.scalar' || mat2.className() ==='mx.constant') {
+			// just multiply all elements by mat2:
+			newmat = mx.matrix(that.rows, that.cols);
+			that.map(function(d,i,j) {
+				if (!d) return;
+				newmat.set(i,j, d.times(mat2));
+			});
+			return newmat;
+		}
+
+		if (mat2.isVector()){
+			// transform vector by matrix
+			if (mat2.rows !== that.cols) throw 'Cannot transform vector of dimension ' + mat2.rows + ' by matrix of dimension (' + that.rows + ','+that.cols+')';
+
+			newmat = mx.matrix(mat2.rows, 1);
+			for (i = 0; i < that.cols; i++) {
+				newmat.set(i, 0, that.column(i).dot(mat2));
+			}
+			return newmat;
+		}
+
+		if (mat2.cols !== that.rows || mat2.rows !== that.cols) throw 'Invalid matrix multiplication';
+		// do matrix multiply:
+		newmat = mx.matrix(that.rows, mat2.cols);
+		for (i = 0; i < mat2.cols; i ++){
+			for (var j = 0; j < that.rows; j++) {
+				newmat.set(i, j, that.row(j).dot(mat2.column(i)));
+			}
+		}
+		return newmat;
+	};
+
+	that.toString = function() {
+		var ret = "[\n";
+
+		for (var i = 0 ; i < that.rows; i++) {
+			ret +="\t";
+			for (var j = 0; j < that.cols; j++) {
+				ret+=that.get(i, j).toString() +",";
+			}
+			ret += "\n";
+		}
+		ret +="]";
+		return ret;
+	};
+
+	return that;
+};
+
+
 mx.multiply = function(symbol1, symbol2) {
 
 	symbol1 = $$(symbol1);
@@ -252,7 +469,7 @@ mx.multiply = function(symbol1, symbol2) {
 	}
 	
 	if(symbol2.value() !== null && symbol1.value() !== null) {
-		return mx.constant(symbol2.value() * symbol.value());
+		return mx.constant(symbol2.value() * symbol1.value());
 	}
 
 	if(!symbol1 || !symbol2) {
@@ -694,12 +911,6 @@ mx.equal = function(symbol1, symbol2, eps, numSamplePoints, rangeMin, rangeMax) 
 	}
 	return true;
 };
-
-// Private functions
-mx.__ = {};
-mx.__.EPSILON = 1e-10;
-mx.__.EQUALITY_CHECK_SAMPLES = 100;
-mx.__.EQUALITY_CHECK_RANGE = 999999;
 
 /**
  * Uses finite difference to approximate derivatives
