@@ -98,14 +98,20 @@ mx.symbol = function() {
 	 * @param  {[type]} mapping [description]
 	 * @return {[type]}         [description]
 	 */
-	that.apply = function(name, value) {
+	that.apply = function(mapping, mappingValues) {
+		if (!mappingValues) mappingValues = mapping;
 		var ret = that;
 		var properties = Object.keys(ret.args);
+		var symbolNames = Object.keys(mapping);
 		for (var i = 0; i < properties.length; i++) {
-			if (ret.args[properties[i]].className() === 'mx.scalar' && ret.args[properties[i]].name() === name) {
-				ret.args[properties[i]] = value;
-			} else {
-				ret.args[properties[i]].apply(name, value);
+			for (var j = 0; j < symbolNames.length; j++) {
+				var name = symbolNames[j];
+				value = mappingValues[name];
+				if (ret.args[properties[i]].className() === 'mx.scalar' && ret.args[properties[i]].name() === name) {
+					ret.args[properties[i]] = value;
+				} else {
+					ret.args[properties[i]].apply(mapping, mappingValues);
+				}
 			}
 		}
 		return ret;
