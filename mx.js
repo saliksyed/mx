@@ -94,13 +94,17 @@ mx.symbol = function() {
 	};
 	
 	/**
-	 * Modifies a symbol by replacing every instance with 
-	 * @param  {[type]} mapping [description]
-	 * @return {[type]}         [description]
+	 * Replaces one variable for another. Mapping is a map, for example:
+	 *  {'x1' : $$('y'), 'x2' : $$('y')} would specify that 'x1' and 'x2' are to be replaced with 'y'
+	 *  An optional mappingValues array will override values. This might be useful for example if replacing
+	 * contents of  one vector to another vector where the keys are the same but values are different.
+	 * @param  {Object} mapping       An object with keys corresponding to variables to replace
+	 * @param  {Object} mappingValues A corresponding object with new values (default will equate to mapping)
+	 * @return {mx.symbol}             The new symbol with variables replaced.
 	 */
-	that.apply = function(mapping, mappingValues) {
+	that.replace = function(mapping, mappingValues) {
 		if (!mappingValues) mappingValues = mapping;
-		var ret = that;
+		var ret = that; // TODO: should return a deep copy!!!!
 		var properties = Object.keys(ret.args);
 		var symbolNames = Object.keys(mapping);
 		for (var i = 0; i < properties.length; i++) {
@@ -110,11 +114,16 @@ mx.symbol = function() {
 				if (ret.args[properties[i]].className() === 'mx.scalar' && ret.args[properties[i]].name() === name) {
 					ret.args[properties[i]] = value;
 				} else {
-					ret.args[properties[i]].apply(mapping, mappingValues);
+					ret.args[properties[i]].replace(mapping, mappingValues);
 				}
 			}
 		}
 		return ret;
+	};
+
+	that.apply = function(applyFn) {
+		var ret = that; // TODO: deep copy
+		return applyFn(ret);
 	};
 
 	// Syntactic sugar methods
@@ -140,7 +149,9 @@ mx.symbol = function() {
 	};
 
 	that.derivative = function(s) {
-		return that.differentiate($$(s));
+		return that.apply(function(d){
+			return d.differentiate($$(s));
+		});
 	};
 
 	return that;
@@ -305,7 +316,7 @@ mx.matrix = function(dim1, dim2) {
 
 	that.set = function(row, col, val) {
 		checkBounds(row,col);
-		that.args.values[row+'_'+col] = val;
+		that.args.values[row+'_'+col] = $$(val);
 		return that;
 	};
 
@@ -323,6 +334,14 @@ mx.matrix = function(dim1, dim2) {
 			}
 		}
 		return that;
+	};
+
+	that.apply = function(applyFn) {
+		var ret = mx.matrix(that.rows, that.cols);
+		that.map(function(d, i, j) {
+			ret.set(i, j, applyFn(d));
+		});
+		return ret;
 	};
 
 	that.transpose = function() {

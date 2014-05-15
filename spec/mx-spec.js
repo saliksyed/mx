@@ -184,7 +184,19 @@ describe('mx.matrix', function() {
 		expect(transformed.get(2,1).value()).toBe(2);
 	});
 
-	// transpose
+	it('should work with transpose', function() {
+		var vec = mx.matrix(3,3).fill(1);
+		var transformed = vec.set(0,0,4).transpose();
+		expect(transformed.get(2,2).value()).toBe(4);
+		expect(transformed.get(0,0).value()).toBe(1);
+	});
+
+	it('should work with transpose for asymetric matrices', function() {
+		var vec = mx.matrix(1,3).fill(1);
+		var transformed = vec.set(0,2,4).transpose();
+		expect(transformed.get(2,0).value()).toBe(4);
+	});
+	
 });
 
 
@@ -303,10 +315,10 @@ describe('mx.add', function() {
 	});
 });
 
-describe('apply', function() {
+describe('replace', function() {
 	it('should correctly replace a symbol', function() {
 		var exp = $$('a').plus(5).times('a');
-		var replaced = exp.apply({'a': $$('x').plus('y')});
+		var replaced = exp.replace({'a': $$('x').plus('y')});
 		expect(replaced.value({'x' : 1})).toBe(null);
 		expect(replaced.value({'y' : 1})).toBe(null);
 		expect(replaced.value({'x' : 1, 'y' : 1})).toBe(14);
