@@ -128,24 +128,34 @@ mx.symbol = function() {
 
 	// Syntactic sugar methods
 	that.times = function(s) {
-		return mx.multiply(that, $$(s));
+		return that.apply(function(d){
+			return mx.multiply(d, $$(s));
+		});
 	};
 
 	that.plus = function(s) {
-		return mx.add(that, $$(s));
+		return that.apply(function(d){
+			return mx.add(d, $$(s));
+		});
 	};
 
 	that.pow = function(s) {
-		return mx.pow(that, $$(s));
+		return that.apply(function(d){
+			return mx.pow(d, $$(s));
+		});
 	};
 
 	that.dividedBy = function(s) {
-		return mx.divide(that, $$(s));
+		return that.apply(function(d){
+			return mx.divide(d, $$(s));
+		});
 	};
 
 
 	that.minus = function(s) {
-		return mx.subtract(that, $$(s));
+		return that.apply(function(d){
+			return mx.subtract(d, $$(s));
+		});
 	};
 
 	that.derivative = function(s) {
@@ -298,10 +308,10 @@ mx.matrix = function(dim1, dim2) {
 		return that.rows === 1 || that.cols ===1;
 	};
 
-	that.setRow = function(row, vec) {
-		if (vec.cols !== that.cols || vec.rows !== 1) throw 'Invalid row vector';
+	that.setRow = function(rowIdx, rowValues) {
+		if (rowValues.cols !== that.cols || rowValues.rows !== 1) throw 'Invalid row vector';
 		for (var i = 0; i < that.cols; i++) {
-			that.set(row, i, vec.get(i, 0));
+			that.set(rowIdx, i, rowValues.get(0, i));
 		}
 		return that;
 	};
@@ -357,10 +367,9 @@ mx.matrix = function(dim1, dim2) {
 			}
 		} else {
 			for (i = 0; i < that.cols; i++) {
-				newmat.setRow(that.column(i).transpose());
+				newmat.setRow(i, that.column(i).transpose());
 			}
 		}
-
 		return newmat;
 	};
 
@@ -471,10 +480,6 @@ mx.matrix = function(dim1, dim2) {
 			}
 		}
 		return newmat;
-	};
-
-	that.times = function(s) {
-		return that.multiply($$(s));
 	};
 
 	that.toString = function() {

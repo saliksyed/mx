@@ -166,11 +166,6 @@ describe('mx.matrix', function() {
 	it('should be able name a matrix and evaluate it:', function() {
 		var matrix = mx.matrix(2,2).named('x').times(3);
 		
-		var transformed = mat.multiply(vec);
-		expect(transformed.get(0,0).value()).toBe(2);
-		expect(transformed.get(1,0).value()).toBe(2);
-		expect(transformed.get(1,1).value()).toBe(2);
-		expect(transformed.get(0,1).value()).toBe(2);
 	});
 
 	it('Identity transforms should work', function() {
@@ -197,9 +192,14 @@ describe('mx.matrix', function() {
 
 	it('should work with transpose', function() {
 		var vec = mx.matrix(3,3).fill(1);
-		var transformed = vec.set(0,0,4).transpose();
-		expect(transformed.get(2,2).value()).toBe(4);
-		expect(transformed.get(0,0).value()).toBe(1);
+		vec.set(0,0,4);
+		vec.set(0,1,4);
+		vec.set(0,2,4);
+		expect(vec.get(0,0).value()).toBe(4);
+		expect(vec.get(0,1).value()).toBe(4);
+		var transformed = vec.transpose();
+		expect(transformed.get(0,0).value()).toBe(4);
+		expect(transformed.get(0,1).value()).toBe(1);
 	});
 
 	it('should work with transpose for asymetric matrices', function() {

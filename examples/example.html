@@ -6,10 +6,11 @@
   <body>
       <script src="../mx.js"></script>
       <script>
-    var vec = mx.matrix(2,2).fill(1);
-    var mat = mx.matrix(2,2).fill(1);
-    
-    var transformed = mat.multiply(vec);
+    var vec = mx.matrix(3,3).fill(1);
+    vec.set(0,0,4);
+    vec.set(0,1,4);
+    vec.set(0,2,4);
+    var transformed = vec.transpose();
       </script>
   </body>
 </html>
