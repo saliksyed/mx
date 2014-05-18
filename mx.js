@@ -160,7 +160,7 @@ mx.symbol = function() {
 mx.constant = function(value) {
 	var that = mx.symbol();
 
-	if (isNaN(value)) throw "Need to specify value for constant";
+	if (isNaN(value)) throw "Need to specify value for constant : " + value;
 
 	that.__class = "mx.constant";
 
@@ -401,6 +401,22 @@ mx.matrix = function(dim1, dim2) {
 		return ret;
 	};
 
+	that.value = function(valueMap) {
+		var ret = mx.matrix(that.rows, that.cols);
+		that.map(function(d, i, j) {
+			ret.set(i, j, d.value(valueMap));
+		});
+		return ret;
+	};
+
+	that.named = function(name) {
+		var ret = mx.matrix(that.rows, that.cols);
+		that.map(function(d, i, j) {
+			ret.set(i, j, $$(name+'_'+i+'_'+j));
+		});
+		return ret;
+	};
+
 	that.dot = function(mat2) {
 		if (!that.isVector() || !mat2.isVector()) throw 'Can only run dot product on vector';
 
@@ -455,6 +471,10 @@ mx.matrix = function(dim1, dim2) {
 			}
 		}
 		return newmat;
+	};
+
+	that.times = function(s) {
+		return that.multiply($$(s));
 	};
 
 	that.toString = function() {
