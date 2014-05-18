@@ -288,38 +288,40 @@ mx.scalar = function(name) {
 
 
 
-mx.matrix = function(dim1, dim2) {
+mx.matrix = function(numCols, numRows) {
 	var that = mx.symbol();
-
-	if (isNaN(dim1) || isNaN(dim2)) throw 'Invalid input dimensions';
+	
+	if(isNaN(numRows)) numRows = 1; // default to a row vector
+	
+	if (isNaN(numCols)) throw 'Invalid input dimensions';
 
 	that.__class = 'mx.matrix';
 
 	that.args.values = {};
-	that.rows = dim1;
-	that.cols = dim2;
+	that.numCols = numCols;
+	that.numRows = numRows;
 
 	var checkBounds = function(row, col){
-		if (row >= that.rows) throw 'Index out of bounds';
-		if (col >= that.cols) throw 'Index out of bounds';
+		if (row >= that.numCols) throw 'Index out of bounds';
+		if (col >= that.numRows) throw 'Index out of bounds';
 	};
 
 	that.isVector = function() {
-		return that.rows === 1 || that.cols ===1;
+		return that.numCols === 1 || that.numRows ===1;
 	};
 
 	that.setRow = function(rowIdx, rowValues) {
-		if (rowValues.cols !== that.cols || rowValues.rows !== 1) throw 'Invalid row vector';
-		for (var i = 0; i < that.cols; i++) {
+		if (rowValues.numRows !== that.numRows || rowValues.numCols !== 1) throw 'Invalid row vector';
+		for (var i = 0; i < that.numCols; i++) {
 			that.set(rowIdx, i, rowValues.get(0, i));
 		}
 		return that;
 	};
 
 	that.setCol = function(col, vec) {
-		if (vec.rows !== that.rows || vec.cols !== 1) throw 'Invalid column vector';
-		for (var i = 0; i < that.rows; i++) {
-			that.set(i, col, vec.get(0, i));
+		if (vec.numCols !== that.numCols || vec.numRows !== 1) throw 'Invalid column vector';
+		for (var i = 0; i < that.numRows; i++) {
+			that.set(i, col, vec.get(i, 0));
 		}
 		return that;
 	};
@@ -338,8 +340,8 @@ mx.matrix = function(dim1, dim2) {
 	};
 
 	that.map = function(mapperFn) {
-		for (var i = 0; i < that.rows; i++) {
-			for(var j = 0; j <that.cols; j++) {
+		for (var i = 0; i < that.numCols; i++) {
+			for(var j = 0; j <that.numRows; j++) {
 				mapperFn(that.get(i,j), i, j);
 			}
 		}
@@ -347,7 +349,7 @@ mx.matrix = function(dim1, dim2) {
 	};
 
 	that.apply = function(applyFn) {
-		var ret = mx.matrix(that.rows, that.cols);
+		var ret = mx.matrix(that.numCols, that.numRows);
 		that.map(function(d, i, j) {
 			ret.set(i, j, applyFn(d));
 		});
@@ -355,28 +357,28 @@ mx.matrix = function(dim1, dim2) {
 	};
 
 	that.transpose = function() {
-		var newmat = mx.matrix(that.cols,that.rows);
+		var newmat = mx.matrix(that.numRows,that.numCols);
 		var i;
-		if (that.cols === 1) {
-			for (i = 0; i < that.rows; i++) {
+		if (that.numRows === 1) {
+			for (i = 0; i < that.numCols; i++) {
 				newmat.set(0, i, that.get(i, 0));
 			}
-		} else if(that.rows === 1) {
-			for (i = 0; i < that.cols; i++) {
+		} else if(that.numCols === 1) {
+			for (i = 0; i < that.numRows; i++) {
 				newmat.set(i, 0, that.get(0, i));
 			}
 		} else {
-			for (i = 0; i < that.cols; i++) {
-				newmat.setRow(i, that.column(i).transpose());
+			for (i = 0; i < that.numRows; i++) {
+				newmat.setCol(i, that.row(i).transpose());
 			}
 		}
 		return newmat;
 	};
 
 	that.multiplyElems = function(mat2) {
-		if(mat2.rows !== that.rows || mat2.cols !== that.cols) throw 'Incompatible matrix sizes : (' + that.rows +"," + that.cols +') vs. ('+mat2.rows+','+mat2.cols+')';
+		if(mat2.numCols !== that.numCols || mat2.numRows !== that.numRows) throw 'Incompatible matrix sizes : (' + that.numCols +"," + that.numRows +') vs. ('+mat2.numCols+','+mat2.numRows+')';
 
-		var newmat = mx.matrix(that.rows, that.cols);
+		var newmat = mx.matrix(that.numCols, that.numRows);
 
 		that.map(function(d,i,j) {
 			newmat.set(i,j, d.times(mat2.get(i,j)));
@@ -385,17 +387,17 @@ mx.matrix = function(dim1, dim2) {
 
 	that.row = function(row) {
 		checkBounds(row,0);
-		var ret = mx.matrix(1, that.cols);
-		for (var i = 0; i < that.cols; i++) {
+		var ret = mx.matrix(1, that.numCols);
+		for (var i = 0; i < that.numCols; i++) {
 			ret.set(0, i, that.get(row, i));
 		}
 		return ret;
 	};
 
 	that.column = function(col) {
-		var ret = mx.matrix(that.rows, 1);
+		var ret = mx.matrix(that.numRows, 1);
 		checkBounds(0, col);
-		for (var i = 0; i < that.rows; i++) {
+		for (var i = 0; i < that.numRows; i++) {
 			ret.set(i, 0, that.get(i, col));
 		}
 
@@ -403,7 +405,7 @@ mx.matrix = function(dim1, dim2) {
 	};
 
 	that.fill = function(val) {
-		var ret = mx.matrix(that.rows, that.cols);
+		var ret = mx.matrix(that.numCols, that.numRows);
 		that.map(function(d, i, j) {
 			ret.set(i, j, $$(val));
 		});
@@ -411,7 +413,7 @@ mx.matrix = function(dim1, dim2) {
 	};
 
 	that.value = function(valueMap) {
-		var ret = mx.matrix(that.rows, that.cols);
+		var ret = mx.matrix(that.numCols, that.numRows);
 		that.map(function(d, i, j) {
 			ret.set(i, j, d.value(valueMap));
 		});
@@ -419,7 +421,7 @@ mx.matrix = function(dim1, dim2) {
 	};
 
 	that.named = function(name) {
-		var ret = mx.matrix(that.rows, that.cols);
+		var ret = mx.matrix(that.numCols, that.numRows);
 		that.map(function(d, i, j) {
 			ret.set(i, j, $$(name+'_'+i+'_'+j));
 		});
@@ -429,19 +431,19 @@ mx.matrix = function(dim1, dim2) {
 	that.dot = function(mat2) {
 		if (!that.isVector() || !mat2.isVector()) throw 'Can only run dot product on vector';
 
-		if (that.rows !== mat2.rows) {
+		if (that.numCols !== mat2.numCols) {
 			mat2 = mat2.transpose();
 		}
 
 		var i;
 		var ret = mx.constant(0);
 
-		if (that.rows === 1) {
-			for (i = 0; i < that.cols; i ++) {
+		if (that.numCols === 1) {
+			for (i = 0; i < that.numRows; i ++) {
 				ret = ret.plus(that.get(0, i).times(mat2.get(0,i)));
 			}
 		} else {
-			for (i = 0; i < that.rows; i ++) {
+			for (i = 0; i < that.numCols; i ++) {
 				ret = ret.plus(that.get(i, 0).times(mat2.get(i, 0)));
 			}
 		}
@@ -452,7 +454,7 @@ mx.matrix = function(dim1, dim2) {
 		var newmat, i;
 		if (mat2.className() === 'mx.scalar' || mat2.className() ==='mx.constant') {
 			// just multiply all elements by mat2:
-			newmat = mx.matrix(that.rows, that.cols);
+			newmat = mx.matrix(that.numCols, that.numRows);
 			that.map(function(d,i,j) {
 				if (!d) return;
 				newmat.set(i,j, d.times(mat2));
@@ -462,20 +464,20 @@ mx.matrix = function(dim1, dim2) {
 
 		if (mat2.isVector()){
 			// transform vector by matrix
-			if (mat2.rows !== that.cols) throw 'Cannot transform vector of dimension ' + mat2.rows + ' by matrix of dimension (' + that.rows + ','+that.cols+')';
+			if (mat2.numRows !== that.numCols) throw 'Cannot transform vector of dimension ' + mat2.numCols + ' by matrix of dimension (' + that.numCols + ','+that.numRows+')';
 
-			newmat = mx.matrix(mat2.rows, 1);
-			for (i = 0; i < that.cols; i++) {
-				newmat.set(i, 0, that.column(i).dot(mat2));
+			newmat = mx.matrix(1, that.numRows);
+			for (i = 0; i < that.numRows; i++) {
+				newmat.set(i, 0, that.row(i).dot(mat2.transpose()));
 			}
 			return newmat;
 		}
 
-		if (mat2.cols !== that.rows || mat2.rows !== that.cols) throw 'Invalid matrix multiplication';
+		if (mat2.numRows !== that.numCols || mat2.numCols !== that.numRows) throw 'Invalid matrix multiplication';
 		// do matrix multiply:
-		newmat = mx.matrix(that.rows, mat2.cols);
-		for (i = 0; i < mat2.cols; i ++){
-			for (var j = 0; j < that.rows; j++) {
+		newmat = mx.matrix(that.numCols, mat2.numRows);
+		for (i = 0; i < mat2.numRows; i ++){
+			for (var j = 0; j < that.numCols; j++) {
 				newmat.set(i, j, that.row(j).dot(mat2.column(i)));
 			}
 		}
@@ -485,9 +487,9 @@ mx.matrix = function(dim1, dim2) {
 	that.toString = function() {
 		var ret = "[\n";
 
-		for (var i = 0 ; i < that.rows; i++) {
+		for (var i = 0 ; i < that.numCols; i++) {
 			ret +="\t";
-			for (var j = 0; j < that.cols; j++) {
+			for (var j = 0; j < that.numRows; j++) {
 				ret+=that.get(i, j).toString() +",";
 			}
 			ret += "\n";
