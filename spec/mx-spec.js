@@ -143,12 +143,12 @@ describe('mx.matrix', function() {
 
 	// multiply
 	it('should be able to transform a vector by a matrix:', function() {
-		var vec = mx.matrix(2,1).fill(1);
+		var vec = mx.matrix(1,2).fill(1);
 		var mat = mx.matrix(2,2).fill(1);
 		
 		var transformed = mat.multiply(vec);
 		expect(transformed.get(0,0).value()).toBe(2);
-		expect(transformed.get(1,0).value()).toBe(2);
+		expect(transformed.get(0,1).value()).toBe(2);
 	});
 
 	it('should be able to transform a matrix by a matrix:', function() {
@@ -169,7 +169,7 @@ describe('mx.matrix', function() {
 	});
 
 	it('Identity transforms should work', function() {
-		var vec = mx.matrix(3,1).fill(1);
+		var vec = mx.matrix(1,3).fill(1);
 		var mat = mx.matrix(3,3).fill(0);
 
 		mat.set(0,0,$$(1));
@@ -178,8 +178,8 @@ describe('mx.matrix', function() {
 		
 		var transformed = mat.multiply(vec);
 		expect(transformed.get(0,0).value()).toBe(1);
-		expect(transformed.get(1,0).value()).toBe(1);
-		expect(transformed.get(2,0).value()).toBe(1);
+		expect(transformed.get(0,1).value()).toBe(1);
+		expect(transformed.get(0,2).value()).toBe(1);
 	});
 
 	it('scalar multiplications should work', function() {

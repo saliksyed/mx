@@ -468,18 +468,17 @@ mx.matrix = function(numCols, numRows) {
 
 			newmat = mx.matrix(1, that.numRows);
 			for (i = 0; i < that.numRows; i++) {
-				newmat.set(i, 0, that.row(i).dot(mat2.transpose()));
+				newmat.set(0, i, that.row(i).dot(mat2.transpose()));
 			}
 			return newmat;
 		}
 
 		if (mat2.numRows !== that.numCols || mat2.numCols !== that.numRows) throw 'Invalid matrix multiplication';
 		// do matrix multiply:
-		newmat = mx.matrix(that.numCols, mat2.numRows);
-		for (i = 0; i < mat2.numRows; i ++){
-			for (var j = 0; j < that.numCols; j++) {
-				newmat.set(i, j, that.row(j).dot(mat2.column(i)));
-			}
+		newmat = mx.matrix(that.numRows, mat2.numCols);
+		for (i = 0; i < mat2.numCols; i ++){
+			var newCol = that.multiply(mat2.column(i).transpose()).transpose();
+			newmat.setCol(i, newCol);
 		}
 		return newmat;
 	};
