@@ -483,10 +483,10 @@ mx.matrix = function(numCols, numRows) {
 	that.toString = function() {
 		var ret = "[\n";
 
-		for (var i = 0 ; i < that.numCols; i++) {
+		for (var i = 0 ; i < that.numRows; i++) {
 			ret +="\t";
-			for (var j = 0; j < that.numRows; j++) {
-				ret+=that.get(i, j).toString() +",";
+			for (var j = 0; j < that.numCols; j++) {
+				ret+=that.get(j, i).toString() +",";
 			}
 			ret += "\n";
 		}
