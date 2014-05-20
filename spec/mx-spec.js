@@ -141,6 +141,14 @@ describe('mx.matrix', function() {
 		expect(mat.get(1,1).value()).toBe(3);
 	});
 
+	// fill
+	it('should be able to get and set a row', function() {
+		var mat = mx.matrix(2,2).fill(3);
+		expect(mat.row(0).dims(0)).toBe(2);
+		expect(mat.row(0).dims(1)).toBe(1);
+	});
+
+
 	// multiply
 	it('should be able to transform a vector by a matrix:', function() {
 		var vec = mx.matrix(1,2).fill(1);

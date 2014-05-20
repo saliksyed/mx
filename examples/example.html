@@ -10,9 +10,15 @@
             var W = mx.matrix(784, 10).named('W');
             var b = mx.matrix(1, 10).named('b');
             var x = mx.matrix(1, 784).named('x');
-            console.log(W.multiply(x).rows);
-            console.log(W.multiply(x).cols);
+            $$(0.5).times(W.multiply(x));
         */
+       
+        var vec = mx.matrix(2,2).fill(1);
+        var mat = mx.matrix(2,2).fill(1);
+        
+        var transformed = mat.multiply(vec);
+
+/*
             var vec = mx.matrix(1,3).fill(1);
         var mat = mx.matrix(3,3).fill(0);
 
@@ -23,6 +29,7 @@
         var transformed = mat.multiply(vec);
         console.log(vec.toString());
         console.log(transformed.toString());
+        */
         </script>
     </body>
 </html>

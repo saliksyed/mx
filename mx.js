@@ -301,42 +301,48 @@ mx.matrix = function(numCols, numRows) {
 	that.numCols = numCols;
 	that.numRows = numRows;
 
-	var checkBounds = function(row, col){
-		if (row >= that.numCols) throw 'Index out of bounds';
-		if (col >= that.numRows) throw 'Index out of bounds';
+	var checkBounds = function(col, row){
+		if (row >= that.numRows) throw 'Index out of bounds';
+		if (col >= that.numCols) throw 'Index out of bounds';
 	};
 
 	that.isVector = function() {
 		return that.numCols === 1 || that.numRows ===1;
 	};
 
+	that.dims = function(dim) {
+		if (dim === 0) return that.numCols;
+		if (dim === 1) return that.numRows;
+		return [that.numCols, that.numRows];
+	};
+
 	that.setRow = function(rowIdx, rowValues) {
-		if (rowValues.numRows !== that.numRows || rowValues.numCols !== 1) throw 'Invalid row vector';
+		if (rowValues.numCols !== that.numCols || rowValues.numRows !== 1) throw 'Invalid row vector';
 		for (var i = 0; i < that.numCols; i++) {
-			that.set(rowIdx, i, rowValues.get(0, i));
+			that.set(i, rowIdx, rowValues.get(i, 0));
 		}
 		return that;
 	};
 
 	that.setCol = function(col, vec) {
-		if (vec.numCols !== that.numCols || vec.numRows !== 1) throw 'Invalid column vector';
+		if (vec.numRows !== that.numRows || vec.numCols !== 1) throw 'Invalid column vector';
 		for (var i = 0; i < that.numRows; i++) {
-			that.set(i, col, vec.get(i, 0));
+			that.set(col, i, vec.get(0, i));
 		}
 		return that;
 	};
 
-	that.set = function(row, col, val) {
-		checkBounds(row,col);
-		that.args.values[row+'_'+col] = $$(val);
+	that.set = function(col, row, val) {
+		checkBounds(col, row);
+		that.args.values[col + '-' + row] = $$(val);
 		return that;
 	};
 
-	that.get = function(row, col) {
-		checkBounds(row,col);
+	that.get = function(col, row) {
+		checkBounds(col, row);
 		// TODO: create deep copy!
-		if (!that.args.values[row+'_'+col]) return $$(0);
-		return that.args.values[row+'_'+col];
+		if (!that.args.values[col + '-' + row]) return $$(0);
+		return that.args.values[col + '-' + row];
 	};
 
 	that.map = function(mapperFn) {
@@ -375,30 +381,21 @@ mx.matrix = function(numCols, numRows) {
 		return newmat;
 	};
 
-	that.multiplyElems = function(mat2) {
-		if(mat2.numCols !== that.numCols || mat2.numRows !== that.numRows) throw 'Incompatible matrix sizes : (' + that.numCols +"," + that.numRows +') vs. ('+mat2.numCols+','+mat2.numRows+')';
-
-		var newmat = mx.matrix(that.numCols, that.numRows);
-
-		that.map(function(d,i,j) {
-			newmat.set(i,j, d.times(mat2.get(i,j)));
-		});
-	};
 
 	that.row = function(row) {
-		checkBounds(row,0);
-		var ret = mx.matrix(1, that.numCols);
+		checkBounds(0, row);
+		var ret = mx.matrix(that.numCols, 1);
 		for (var i = 0; i < that.numCols; i++) {
-			ret.set(0, i, that.get(row, i));
+			ret.set(i, 0, that.get(i, row));
 		}
 		return ret;
 	};
 
 	that.column = function(col) {
-		var ret = mx.matrix(that.numRows, 1);
-		checkBounds(0, col);
+		var ret = mx.matrix(1,that.numRows);
+		checkBounds(col, 0);
 		for (var i = 0; i < that.numRows; i++) {
-			ret.set(i, 0, that.get(i, col));
+			ret.set(0, i, that.get(col, i));
 		}
 
 		return ret;
@@ -475,9 +472,9 @@ mx.matrix = function(numCols, numRows) {
 
 		if (mat2.numRows !== that.numCols || mat2.numCols !== that.numRows) throw 'Invalid matrix multiplication';
 		// do matrix multiply:
-		newmat = mx.matrix(that.numRows, mat2.numCols);
+		newmat = mx.matrix(mat2.numCols, that.numRows);
 		for (i = 0; i < mat2.numCols; i ++){
-			var newCol = that.multiply(mat2.column(i).transpose()).transpose();
+			var newCol = that.multiply(mat2.column(i));
 			newmat.setCol(i, newCol);
 		}
 		return newmat;
