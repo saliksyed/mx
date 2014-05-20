@@ -144,8 +144,8 @@ describe('mx.matrix', function() {
 	// fill
 	it('should be able to get and set a row', function() {
 		var mat = mx.matrix(2,2).fill(3);
-		expect(mat.row(0).dims(0)).toBe(2);
-		expect(mat.row(0).dims(1)).toBe(1);
+		expect(mat.row(0).dim(0)).toBe(2);
+		expect(mat.row(0).dim(1)).toBe(1);
 	});
 
 
@@ -168,6 +168,20 @@ describe('mx.matrix', function() {
 		expect(transformed.get(1,0).value()).toBe(2);
 		expect(transformed.get(1,1).value()).toBe(2);
 		expect(transformed.get(0,1).value()).toBe(2);
+	});
+
+	it('should be able to transform non-square matrices correctly', function() {
+		var vec = mx.matrix(2,3).fill(1);
+		var mat = mx.matrix(3,2).fill(1);
+		var transformed = mat.multiply(vec);
+		var transformed2 = vec.multiply(mat);
+
+		expect(transformed.dim(0)).toBe(2);
+		expect(transformed.dim(1)).toBe(2);
+		expect(transformed.get(0,0).value()).toBe(3);
+		expect(transformed2.dim(0)).toBe(3);
+		expect(transformed2.dim(1)).toBe(3);
+		expect(transformed2.get(0,0).value()).toBe(2);
 	});
 
 	// named

@@ -310,9 +310,9 @@ mx.matrix = function(numCols, numRows) {
 		return that.numCols === 1 || that.numRows ===1;
 	};
 
-	that.dims = function(dim) {
-		if (dim === 0) return that.numCols;
-		if (dim === 1) return that.numRows;
+	that.dim = function(idx) {
+		if (idx === 0) return that.numCols;
+		if (idx === 1) return that.numRows;
 		return [that.numCols, that.numRows];
 	};
 
