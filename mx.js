@@ -164,7 +164,7 @@ mx.symbol = function() {
 		});
 	};
 
-	that.plus = function(s) {
+	that.plus = that.add = function(s) {
 		return that.apply(function(d){
 			return mx.add(d, $$(s));
 		});
@@ -1003,7 +1003,7 @@ mx.exp = function(symbol) {
 	};
 
 	that.copy = function() {
-		return mx.ln(that.args.exponent);
+		return mx.exp(that.args.exponent);
 	};
 
 	/**

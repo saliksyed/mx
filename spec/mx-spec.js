@@ -367,6 +367,13 @@ describe('fn', function() {
 
 		
 	});
+	it('should correctly evaluate a more complex function', function() {
+        var sigmoid = $$(1).dividedBy($$(1).plus(mx.exp('t')));
+        var correct = sigmoid.value({'t' : -1} );
+        var sigmoidFn = sigmoid.fn('t');
+        expect(sigmoidFn($$(-1)).value()).toBe(correct);
+	});
+
 });
 describe('mx.subtract', function() {
 
