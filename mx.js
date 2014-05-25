@@ -1,4 +1,7 @@
 /*jshint multistr: true */
+
+// TODO: Addition and subtraction of vectors
+
 var mx;
 var root;
 try {
@@ -89,10 +92,15 @@ mx.symbol = function() {
 		return ret;
 	};
 
-	that.copy = function() {
-		return JSON.parse(JSON.stringify(that));
+	that.copyArgs = function() {
+		var args = {};
+		var properties = Object.keys(that.args);
+		for(var i = 0; i < properties.length; i++) {
+			args[properties[i]] = that.args[properties[i]].copy();
+		}
+		return args;
 	};
-	
+
 	/**
 	 * Replaces one variable for another. Mapping is a map, for example:
 	 *  {'x1' : $$('y'), 'x2' : $$('y')} would specify that 'x1' and 'x2' are to be replaced with 'y'
@@ -104,21 +112,44 @@ mx.symbol = function() {
 	 */
 	that.replace = function(mapping, mappingValues) {
 		if (!mappingValues) mappingValues = mapping;
-		var ret = that; // TODO: should return a deep copy!!!!
+		var ret = that.copy();
 		var properties = Object.keys(ret.args);
 		var symbolNames = Object.keys(mapping);
-		for (var i = 0; i < properties.length; i++) {
-			for (var j = 0; j < symbolNames.length; j++) {
-				var name = symbolNames[j];
+		var i,j,name;
+
+		// check this object itself:
+		for (j = 0; j < symbolNames.length; j++) {
+			name = symbolNames[j];
+			value = mappingValues[name];
+			if (ret.className() === 'mx.scalar' && ret.name() === name) {
+				return value;
+			}
+		}
+
+		// check arguments
+		for (i = 0; i < properties.length; i++) {
+			for (j = 0; j < symbolNames.length; j++) {
+				name = symbolNames[j];
 				value = mappingValues[name];
 				if (ret.args[properties[i]].className() === 'mx.scalar' && ret.args[properties[i]].name() === name) {
 					ret.args[properties[i]] = value;
 				} else {
-					ret.args[properties[i]].replace(mapping, mappingValues);
+					ret.args[properties[i]] = ret.args[properties[i]].replace(mapping, mappingValues);
 				}
 			}
 		}
 		return ret;
+	};
+
+	that.fn = function() {
+		var variables = arguments;
+		return function() {
+			var mapping = {};
+			for (var i = 0; i < variables.length; i++) {
+				mapping[variables[i]] = arguments[i];
+			}
+			return that.replace(mapping);
+		};
 	};
 
 	that.apply = function(applyFn) {
@@ -200,6 +231,10 @@ mx.constant = function(value) {
 		return '' + value;
 	};
 
+	that.copy = function() {
+		return mx.constant(value);
+	};
+
 	return that;
 };
 
@@ -219,6 +254,10 @@ mx.op = function(fn) {
 		}
 	};
 
+	that.copy = function() {
+		return mx.op(fn);
+	};
+
 	return that;
 };
 
@@ -228,6 +267,8 @@ mx.scalar = function(name) {
 	if (!name) throw "Need to specify a name for symbol";
 
 	name = ''+name;
+
+	that.args = {};
 
 	that.__class = "mx.scalar";
 
@@ -283,10 +324,13 @@ mx.scalar = function(name) {
 		return [that];
 	};
 
+
+	that.copy = function() {
+		return mx.scalar(name);
+	};
+
 	return that;
 };
-
-
 
 mx.matrix = function(numCols, numRows) {
 	var that = mx.symbol();
@@ -297,7 +341,7 @@ mx.matrix = function(numCols, numRows) {
 
 	that.__class = 'mx.matrix';
 
-	that.args.values = {};
+	that.args = {};
 	that.numCols = numCols;
 	that.numRows = numRows;
 
@@ -334,15 +378,15 @@ mx.matrix = function(numCols, numRows) {
 
 	that.set = function(col, row, val) {
 		checkBounds(col, row);
-		that.args.values[col + '-' + row] = $$(val);
+		that.args[col + '-' + row] = $$(val);
 		return that;
 	};
 
 	that.get = function(col, row) {
 		checkBounds(col, row);
 		// TODO: create deep copy!
-		if (!that.args.values[col + '-' + row]) return $$(0);
-		return that.args.values[col + '-' + row];
+		if (!that.args[col + '-' + row]) return $$(0);
+		return that.args[col + '-' + row];
 	};
 
 	that.map = function(mapperFn) {
@@ -426,14 +470,24 @@ mx.matrix = function(numCols, numRows) {
 	};
 
 	that.dot = function(mat2) {
-		if (!that.isVector() || !mat2.isVector()) throw 'Can only run dot product on vector';
+		if (!mat2.isVector()) throw 'Can only run dot product on vector';
+
+		var i, ret;
 
 		if (that.numCols !== mat2.numCols) {
 			mat2 = mat2.transpose();
 		}
+		
+		// return element wise dot product if matrix
+		if (!that.isVector()) {
+			ret = mx.matrix(that.numCols, 1);
+			for (i = 0; i < that.numCols; i++) {
+				ret.set(i, 0, that.column(i).dot(mat2));
+			}
+			return ret;
+		}
 
-		var i;
-		var ret = mx.constant(0);
+		ret = mx.constant(0);
 
 		if (that.numCols === 1) {
 			for (i = 0; i < that.numRows; i ++) {
@@ -494,6 +548,13 @@ mx.matrix = function(numCols, numRows) {
 		return ret;
 	};
 
+	that.copy = function() {
+		var tmp = mx.matrix(that.numCols, that.numRows);
+		tmp.args = that.copyArgs();
+		return tmp;
+	};
+
+
 	return that;
 };
 
@@ -529,6 +590,10 @@ mx.multiply = function(symbol1, symbol2) {
 	that.args = {a : symbol1, b : symbol2};
 
 	that.__class = "mx.multiply";
+
+	that.copy = function() {
+		return mx.multiply(that.args.a.copy(), that.args.b.copy());
+	};
 
 	that.value = function(valueMap) {
 		if (that.args.a.value(valueMap) === null || that.args.b.value(valueMap) === null) return null;
@@ -579,6 +644,10 @@ mx.add = function(symbol1, symbol2) {
 	that.args.a = symbol1;
 	that.args.b = symbol2;
 
+	that.copy = function() {
+		return mx.multiply(that.args.a.copy(), that.args.b.copy());
+	};
+
 	that.value = function(valueMap) {
 		if (that.args.a.value(valueMap) === null || that.args.b.value(valueMap) === null) return null;
 		return that.args.a.value(valueMap) + that.args.b.value(valueMap);
@@ -594,6 +663,11 @@ mx.add = function(symbol1, symbol2) {
 	 */
 	that.toString = function() {
 		return "(" + that.args.a.toString() + ") + (" + that.args.b.toString() + ")";
+	};
+
+
+	that.copy = function() {
+		return mx.add(that.args.a, that.args.b);
 	};
 
 	return that;
@@ -650,6 +724,10 @@ mx.divide = function(symbol1, symbol2) {
 		return "(" + that.args.a.toString() + ") / (" + that.args.b.toString() + ")";
 	};
 
+	that.copy = function() {
+		return mx.divide(that.args.a, that.args.b);
+	};
+
 	return that;
 };
 
@@ -702,6 +780,10 @@ mx.sin = function(symbol) {
 		return "sin(" + that.args.symbol.toString() + ")";
 	};
 
+	that.copy = function() {
+		return mx.sin(that.args.symbol);
+	};
+
 	return that;
 };
 
@@ -745,6 +827,10 @@ mx.cos = function(symbol) {
 	 */
 	that.toString = function() {
 		return "cos(" + that.args.symbol.toString() + ")";
+	};
+
+	that.copy = function() {
+		return mx.cos(that.args.symbol);
 	};
 
 	return that;
@@ -806,6 +892,10 @@ mx.pow = function(symbolBase, symbolPower) {
 		return "(" + that.args.base.toString() + ")^"+that.args.power.value();
 	};
 
+	that.copy = function() {
+		return mx.pow(that.args.base, that.args.power);
+	};
+
 	return that;
 };
 
@@ -862,6 +952,11 @@ mx.ln = function(symbol) {
 		return that.args.base;
 	};
 
+
+	that.copy = function() {
+		return mx.ln(that.args.base);
+	};
+
 	return that;
 };
 
@@ -905,6 +1000,10 @@ mx.exp = function(symbol) {
 	 */
 	that.toString = function() {
 		return "exp(" + that.args.exponent.toString() + ")";
+	};
+
+	that.copy = function() {
+		return mx.ln(that.args.exponent);
 	};
 
 	/**
@@ -1066,5 +1165,28 @@ mx.nice = function() {
 	};
 
 };
+
+mx.nn = {};
+
+mx.nn.softmax = function(vec) {
+	var that = mx.matrix(vec.dim(0), vec.dim(1));
+	
+	that.__class = 'mx.nn.softmax';
+	
+	that.value = function(valueMap) {
+		var total = 0;
+
+		vec.map(function(d, i, j) {
+			total += d.value(valueMap);
+		});
+
+		return vec.apply(function(d, i, j) {
+			return d.value(valueMap) / total;
+		});
+	};
+
+	return that;
+};
+
 
 root.$$ = mx.$$;

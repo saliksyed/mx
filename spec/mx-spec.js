@@ -78,7 +78,6 @@ describe('mx.scalar', function() {
 });
 
 
-
 describe('mx.matrix', function() {
 	it('should return mx.matrix as classname', function() {
 		expect(mx.matrix(1,1).className()).toBe('mx.matrix');
@@ -359,6 +358,16 @@ describe('replace', function() {
 });
 
 
+describe('fn', function() {
+	it('should correctly evaluate a function', function() {
+		var exp = $$('a').plus(5).times('b').fn('a','b');
+		
+		expect(exp($$(3),$$(4)).value()).toBe(32);
+		expect(exp($$(5),$$(2)).value()).toBe(20);
+
+		
+	});
+});
 describe('mx.subtract', function() {
 
 	it('should throw an exception if instantiated without values', function() {
