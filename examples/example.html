@@ -6,38 +6,18 @@
     <body>
         <script src="../mx.js"></script>
         <script>
-        /*
-            var W = mx.matrix(784, 10).named('W');
-            var b = mx.matrix(1, 10).named('b');
-            var x = mx.matrix(1, 784).named('x');
-            console.log(W.dot(x).add(b));
-            */
 
-        var vec = mx.matrix(2,1);
-        mx.nn.softmax(mx.matrix(1,2).named('x')).value({'x_0_0' : 3, 'x_0_1' : 5});
+            var FEATURE_DIMENSION = 5;
+            var NUM_LABELS = 10;
 
-        console.log(mx.nn.softmax(mx.matrix(1,2).named('x').apply(mx.ln)).value({'x_0_0' : 3, 'x_0_1' : 5}).toString());
+            var W = mx.matrix(FEATURE_DIMENSION, NUM_LABELS).named('W');
+            var b = mx.matrix(1, NUM_LABELS).named('b');
+            var x = mx.matrix(32, FEATURE_DIMENSION).named('x');
+            var p_y_given_x = mx.nn.softmax(W.multiply(x).plus(b));
+            var prediction = mx.nn.argmax(p_y_given_x);
 
-
-
-        var mat2 = mx.matrix(2,2).fill(2);
-        var mat3 = mx.matrix(1,2).fill(1);
-        console.log(mx.nn.softmax(mat2.dot(mat3)).value().toString());
-
-
-
-/*
-            var vec = mx.matrix(1,3).fill(1);
-        var mat = mx.matrix(3,3).fill(0);
-
-        mat.set(0,0,$$(1));
-        mat.set(1,1,$$(1));
-        mat.set(2,2,$$(1));
-        
-        var transformed = mat.multiply(vec);
-        console.log(vec.toString());
-        console.log(transformed.toString());
-        */
+            //var loss = p_y_given_x
+            //
         </script>
     </body>
 </html>

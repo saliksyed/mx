@@ -350,6 +350,51 @@ mx.matrix = function(numCols, numRows) {
 		if (col >= that.numCols) throw 'Index out of bounds';
 	};
 
+	that.coerce = function(numCols, numRows) {
+		if (that.numCols === numCols && that.numRows === numRows) {
+			return that.copy();
+		}
+
+		if (that.numCols === 1 && that.numRows ===1) {
+			return mx.matrix(numCols,numRows).fill(that.get(0,0).copy());
+		}
+
+		var ret = mx.matrix(numCols, numRows);
+		var i;
+
+		if (that.numCols ===1 && that.numRows === numRows && that.numCols !== numCols) {
+			for (i = 0; i < numCols; i ++){
+				ret.setCol(i, that.column(0));
+			}
+			return ret;
+		}
+
+		if (that.numRows ===1 && that.numCols === numCols && that.numRows !== numRows) {
+			for (i = 0; i < numRows; i ++){
+				ret.setRow(i, that.row(0));
+			}
+			return ret;
+		}
+
+		return null;
+	};
+
+	that.plus = that.add = function(mat2) {
+		mat2 = mat2.coerce(that.numCols, that.numRows);
+		if (!mat2) {
+			throw 'Incompatiable matrix sizes';
+		}
+
+		var newMat = mx.matrix(that.numCols, that.numRows);
+		
+		for (var i = 0; i < that.numCols; i++) {
+			for (var j = 0; j < that.numRows; j++) {
+				newMat.set(i, j, mx.add(that.get(i,j), mat2.get(i,j)));
+			}
+		}
+		return newMat;
+	};
+
 	that.isVector = function() {
 		return that.numCols === 1 || that.numRows ===1;
 	};
@@ -524,7 +569,7 @@ mx.matrix = function(numCols, numRows) {
 			return newmat;
 		}
 
-		if (mat2.numRows !== that.numCols || mat2.numCols !== that.numRows) throw 'Invalid matrix multiplication';
+		if (mat2.numRows !== that.numCols) throw 'Invalid matrix multiplication';
 		// do matrix multiply:
 		newmat = mx.matrix(mat2.numCols, that.numRows);
 		for (i = 0; i < mat2.numCols; i ++){
@@ -1188,5 +1233,27 @@ mx.nn.softmax = function(vec) {
 	return that;
 };
 
+mx.nn.argmax = function(vec) {
+	var that = mx.symbol();
+
+	that.value = function(valueMap) {
+		var evaluated = vec.apply(function(d, i, j) {
+			return d.value(valueMap);
+		});
+
+		var variables = Object.keys(evaluated.args);
+		
+		var max;
+		var argmax;
+		for (var i = 0; i < variables.length; i++) {
+			if (max === undefined || evaluated.args[variables[i]] > max ) {
+				argmax = variables[i];
+			}
+		}
+		return argmax;
+	};
+
+	return that;
+};
 
 root.$$ = mx.$$;

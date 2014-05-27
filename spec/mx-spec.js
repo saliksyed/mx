@@ -203,6 +203,19 @@ describe('mx.matrix', function() {
 		expect(transformed.get(0,2).value()).toBe(1);
 	});
 
+	it('should coerce dimensions correctly', function() {
+		var vec = mx.matrix(3,1).fill(3);
+		var mat = vec.coerce(3,3);
+		expect(mat.dim(0)).toBe(3);
+		expect(mat.dim(1)).toBe(3);
+	});
+
+	it('should not coerce incorrectly', function() {
+		var vec = mx.matrix(3,2).fill(3);
+		var mat = vec.coerce(3,3);
+		expect(mat).toBe(null);
+	});
+
 	it('scalar multiplications should work', function() {
 		var vec = mx.matrix(3,3).fill(1);
 		var transformed = vec.multiply($$(2));
